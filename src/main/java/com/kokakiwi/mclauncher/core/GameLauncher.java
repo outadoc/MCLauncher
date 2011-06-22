@@ -42,7 +42,7 @@ public class GameLauncher implements Runnable {
 			});
 			File dir = new File(path);
 			updateClassPath(dir);
-			//runGame();
+			runGame();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

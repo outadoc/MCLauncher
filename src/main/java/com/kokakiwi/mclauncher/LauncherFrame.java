@@ -3,8 +3,12 @@ package com.kokakiwi.mclauncher;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -12,6 +16,7 @@ import javax.swing.*;
 import com.kokakiwi.mclauncher.core.Launcher;
 import com.kokakiwi.mclauncher.graphics.LoginForm;
 import com.kokakiwi.mclauncher.utils.Configuration;
+import com.kokakiwi.mclauncher.utils.StringFormatter;
 import com.kokakiwi.mclauncher.utils.Utils;
 
 public class LauncherFrame extends Frame {
@@ -25,8 +30,11 @@ public class LauncherFrame extends Frame {
 
 	public LauncherFrame() {
 		super();
+		
+		config.load(Utils.getResourceAsStream("config/config.yml"), "Yaml");
 		config.load(Utils.getResourceAsStream("config/launcher.properties"));
-		setTitle(config.get("windowTitle"));
+		
+		setTitle(config.getString("launcher.windowTitle"));
 		setBackground(Color.BLACK);
 
 		panel = new JPanel();
@@ -71,29 +79,36 @@ public class LauncherFrame extends Frame {
 		});
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void login()
 	{
-		if(config.get("offlineMode").equals("true")){
-			config.set("latestVersion", null);
-			config.set("userName", loginForm.getUserName());
-			runGame();
+		boolean offlineMode = config.getBoolean("launcher.offlineMode");
+		
+		if(offlineMode){
+			playOffline();
 		}else {
 			try {
 				loginForm.setStatusText("Logging in...");
-				String parameters = "user=" + URLEncoder.encode(loginForm.getUserName(), "UTF-8")
-				+ "&password=" + URLEncoder.encode(new String(loginForm.getPassword()), "UTF-8")
-				+ "&version=" + 13;
-				String result = Utils.executePost(config.get("loginURL"), parameters);
+				Map<String, String> keys = new HashMap<String, String>();
+				keys.put("USERNAME", URLEncoder.encode(loginForm.getUserName(), "UTF-8"));
+				keys.put("PASSWORD", URLEncoder.encode(new String(loginForm.getPassword())));
+				String parameters = StringFormatter.format(config.getString("launcher.loginParameters"), keys);
+				String result = Utils.executePost(config.getString("launcher.loginURL"), parameters, config.getString("updater.keyFileName"));
 				if(result == null)
 				{
-					//TODO Can't connect to login site. Offline mode?
+					loginForm.askOfflineMode();
 					loginForm.setStatusText("Can't connect to login website.");
 					return;
 				}
 				if(!result.contains(":"))
 				{
-					//TODO Error during login
-					loginForm.setStatusText("Error during login.");
+					if (result.trim().equals("Bad login")) {
+						loginForm.setStatusText("Login failed!");
+					}else if (result.trim().equals("Old version")) {
+						loginForm.setStatusText("Outdated launcher");
+					}else {
+						loginForm.setStatusText(result);
+					}
 					return;
 				}
 				String[] values = result.split(":");
@@ -101,6 +116,7 @@ public class LauncherFrame extends Frame {
 				config.set("downloadTicket", values[1].trim());
 				config.set("userName", values[2].trim());
 				config.set("sessionID", values[3].trim());
+				loginForm.loginOk();
 				
 				runGame();
 				
@@ -110,7 +126,13 @@ public class LauncherFrame extends Frame {
 		}
 	}
 	
-
+	public void playOffline()
+	{
+		config.set("latestVersion", "-1");
+		config.set("userName", loginForm.getUserName());
+		loginForm.loginOk();
+		runGame();
+	}
 	
 	public void doLogin()
 	{

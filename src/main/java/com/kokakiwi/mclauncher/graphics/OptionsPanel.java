@@ -61,7 +61,7 @@ public class OptionsPanel extends JDialog {
 		optionsPanel.add(fieldPanel, "Center");
 
 		JButton forceButton = new JButton("Force update!");
-		if(launcherFrame.config.get("force-update") != null)
+		if(launcherFrame.config.getString("force-update") != null)
 		{
 			forceButton.setEnabled(false);
 			forceButton.setText("Will force!");

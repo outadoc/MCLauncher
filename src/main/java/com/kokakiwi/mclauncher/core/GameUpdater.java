@@ -16,6 +16,7 @@ import java.security.AccessController;
 import java.security.MessageDigest;
 import java.security.PrivilegedExceptionAction;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
@@ -34,7 +35,6 @@ public class GameUpdater implements Runnable {
 
 	private boolean lzmaSupported;
 	private boolean pack200Supported;
-	private String mainGameUrl;
 	public URL[] urlList;
 	public boolean fatalError = false;
 	public String fatalErrorDescription;
@@ -47,7 +47,6 @@ public class GameUpdater implements Runnable {
 	public GameUpdater(LauncherFrame launcherFrame) {
 		this.launcherFrame = launcherFrame;
 		this.launcher = launcherFrame.launcher;
-		this.mainGameUrl = launcherFrame.config.get("jarFileName");
 	}
 
 	public void run() {
@@ -70,12 +69,11 @@ public class GameUpdater implements Runnable {
 			if(!dir.exists())
 				dir.mkdirs();
 			
-			String latestVersion = launcherFrame.config.get("latestVersion");
+			String latestVersion = launcherFrame.config.getString("latestVersion");
 			
 			if(latestVersion != null)
 			{
-				boolean forceUpdate = launcherFrame.config.get("force-update") == null ? false : true;
-				
+				boolean forceUpdate = launcherFrame.config.getString("force-update") == null ? false : true;
 				File versionFile = new File(dir, "version");
 				
 				boolean cacheAvailable = false;
@@ -96,7 +94,7 @@ public class GameUpdater implements Runnable {
 						extractJars(path);
 						extractNatives(path);
 
-						if (latestVersion != null) {
+						if (latestVersion != null && !((latestVersion.equals("-1")))) {
 							launcher.setPercentage(90);
 							writeVersionFile(versionFile, latestVersion);
 						}
@@ -115,41 +113,27 @@ public class GameUpdater implements Runnable {
 	
 	protected void loadJarURLs() throws Exception {
 		launcher.setState(State.DETERMINING_PACKAGE);
-		String jarList = "lwjgl.jar, jinput.jar, lwjgl_util.jar, "
-				+ this.mainGameUrl;
-		jarList = trimExtensionByCapabilities(jarList);
-
-		StringTokenizer jar = new StringTokenizer(jarList, ", ");
-		int jarCount = jar.countTokens() + 1;
-
-		this.urlList = new URL[jarCount];
-
-		URL path = new URL("http://s3.amazonaws.com/MinecraftDownload/");
-
-		for (int i = 0; i < jarCount - 1; i++) {
-			this.urlList[i] = new URL(path, jar.nextToken());
+		List<String> jarList = launcherFrame.config.getStringList("updater.jarList");
+		this.urlList = new URL[jarList.size() + 1];
+		
+		for(int i = 0; i < jarList.size(); i++)
+		{
+			this.urlList[i] = new URL(jarList.get(i));
 		}
 
-		String osName = System.getProperty("os.name");
+		Utils.OS osName = Utils.getPlatform();
 		String nativeJar = null;
-
-		if (osName.startsWith("Win"))
-			nativeJar = "windows_natives.jar.lzma";
-		else if (osName.startsWith("Linux"))
-			nativeJar = "linux_natives.jar.lzma";
-		else if (osName.startsWith("Mac"))
-			nativeJar = "macosx_natives.jar.lzma";
-		else if ((osName.startsWith("Solaris")) || (osName.startsWith("SunOS")))
-			nativeJar = "solaris_natives.jar.lzma";
-		else {
-			fatalErrorOccured("OS (" + osName + ") not supported", null);
-		}
+		
+		if(osName == Utils.OS.unknown)
+			fatalErrorOccured("OS (" + System.getProperty("os.name") + ") not supported", null);
+		else
+			nativeJar = launcherFrame.config.getString("updater.nativesList." + osName.name());
 
 		if (nativeJar == null) {
 			fatalErrorOccured("no lwjgl natives files found", null);
 		} else {
 			nativeJar = trimExtensionByCapabilities(nativeJar);
-			this.urlList[(jarCount - 1)] = new URL(path, nativeJar);
+			this.urlList[jarList.size()] = new URL(nativeJar);
 		}
 	}
 
@@ -166,7 +150,7 @@ public class GameUpdater implements Runnable {
 	protected void downloadJars(String path) throws Exception {
 		File versionFile = new File(path, "md5s");
 		Properties md5s = new Properties();
-		boolean forceUpdate = launcherFrame.config.get("force-update") == null ? false : true;
+		boolean forceUpdate = launcherFrame.config.getString("force-update") == null ? false : true;
 		if (versionFile.exists()) {
 			try {
 				FileInputStream fis = new FileInputStream(versionFile);
@@ -515,9 +499,6 @@ public class GameUpdater implements Runnable {
 		}
 
 		if (is[0] == null) {
-			if (currentFile.equals(launcherFrame.config.get("jarFileName"))) {
-				throw new Exception("Unable to download " + currentFile);
-			}
 			throw new Exception("Unable to download " + currentFile);
 		}
 

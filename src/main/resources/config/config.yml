@@ -1,0 +1,26 @@
+launcher:
+    windowTitle: 'Minecraft Launcher'
+    browserHomeURL: 'http://mcupdate.tumblr.com/'
+    loginURL: 'https://login.minecraft.net/'
+    loginParameters: 'user={USERNAME}&password={PASSWORD}&version=13'
+    offlineMode: false
+updater:
+    customGameDir: false
+    gameDir: ''
+    jarFileName: 'minecraft.jar'
+    folderName: 'minecraft'
+    keyFileName: 'minecraft.key'
+    jarList:
+        - 'http://s3.amazonaws.com/MinecraftDownload/lwjgl.jar'
+        - 'http://s3.amazonaws.com/MinecraftDownload/jinput.jar'
+        - 'http://s3.amazonaws.com/MinecraftDownload/lwjgl_util.jar'
+        - 'http://s3.amazonaws.com/MinecraftDownload/minecraft.jar'
+    nativesList:
+        windows: 'http://s3.amazonaws.com/MinecraftDownload/windows_natives.jar.lzma'
+        linux: 'http://s3.amazonaws.com/MinecraftDownload/linux_natives.jar.lzma'
+        macosx: 'http://s3.amazonaws.com/MinecraftDownload/macosx_natives.jar.lzma'
+        solaris: 'http://s3.amazonaws.com/MinecraftDownload/solaris_natives.jar.lzma'
+gameLauncher:
+    gameName: 'Minecraft'
+    documentBaseURL: 'http://www.minecraft.net/game/'
+    gameHost: 'www.minecraft.net'

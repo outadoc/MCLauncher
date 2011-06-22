@@ -26,6 +26,34 @@ public class ClassesUtils {
 		}
 
 	}
+	
+	public static class TryAgainActionListener implements ActionListener {
+		private LauncherFrame launcherFrame;
+		
+		public TryAgainActionListener(LauncherFrame launcherFrame)
+		{
+			this.launcherFrame = launcherFrame;
+		}
+
+		public void actionPerformed(ActionEvent paramActionEvent) {
+			this.launcherFrame.loginForm.loginMode();
+		}
+
+	}
+	
+	public static class PlayOfflineActionListener implements ActionListener {
+		private LauncherFrame launcherFrame;
+		
+		public PlayOfflineActionListener(LauncherFrame launcherFrame)
+		{
+			this.launcherFrame = launcherFrame;
+		}
+
+		public void actionPerformed(ActionEvent paramActionEvent) {
+			this.launcherFrame.playOffline();
+		}
+
+	}
 
 	public static class BrowserThread extends Thread {
 		private JTextPane editorPane;

@@ -15,6 +15,7 @@ import java.security.cert.Certificate;
 import javax.net.ssl.HttpsURLConnection;
 
 import com.kokakiwi.mclauncher.LauncherFrame;
+import com.kokakiwi.mclauncher.MCLauncher;
 
 public class Utils {
 	public static File workDir = null;
@@ -26,7 +27,7 @@ public class Utils {
 	
 	public static File getWorkingDirectory(LauncherFrame launcherFrame)
 	{
-		return getWorkingDirectory(launcherFrame.config.get("folderName"), (launcherFrame.config.get("gameDir").equals("auto") ? null : launcherFrame.config.get("gameDir")));
+		return getWorkingDirectory(launcherFrame.config.getString("updater.folderName"), (launcherFrame.config.getBoolean("updater.customGameDir") ? launcherFrame.config.getString("updater.gameDir") : null));
 	}
 	
 	public static File getWorkingDirectory(String applicationName, String local) {
@@ -56,9 +57,7 @@ public class Utils {
 		
 		if(local != null)
 		{
-			workingDirectory = new File(local, "." + applicationName + "/");
-			if(!workingDirectory.exists())
-				workingDirectory.mkdirs();
+			workingDirectory = new File(new File(local + "/").getAbsoluteFile(), "." + applicationName + "/");
 		}
 		
 		if ((!workingDirectory.exists()) && (!workingDirectory.mkdirs()))
@@ -70,7 +69,7 @@ public class Utils {
 		return workDir;
 	}
 	
-	public static String executePost(String targetURL, String urlParameters) {
+	public static String executePost(String targetURL, String urlParameters, String keyFileName) {
 		String protocol = targetURL.substring(4);
 		HttpURLConnection connection = null;
 		try {
@@ -100,7 +99,7 @@ public class Utils {
 				Certificate[] certs = ((HttpsURLConnection) connection).getServerCertificates();
 
 				byte[] bytes = new byte[294];
-				DataInputStream dis = new DataInputStream(getResourceAsStream("keys/minecraft.key"));
+				DataInputStream dis = new DataInputStream(getResourceAsStream("keys/" + keyFileName));
 				dis.readFully(bytes);
 				dis.close();
 
@@ -155,7 +154,7 @@ public class Utils {
 		}
 	}
 	
-	private static OS getPlatform() {
+	public static OS getPlatform() {
 		String osName = System.getProperty("os.name").toLowerCase();
 		if (osName.contains("win"))
 			return OS.windows;
@@ -172,7 +171,7 @@ public class Utils {
 		return OS.unknown;
 	}
 	
-	private static enum OS {
+	public static enum OS {
 		linux, solaris, windows, macos, unknown;
 	}
 }

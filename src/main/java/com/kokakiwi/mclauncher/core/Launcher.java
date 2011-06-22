@@ -60,11 +60,22 @@ public class Launcher extends Applet implements Runnable, AppletStub,
 			e.printStackTrace();
 		}
 		
-		if(launcherFrame.config.get("server") != null)
-			this.customParameters.put("server", launcherFrame.config.get("server"));
+		if(launcherFrame.config.getString("server") != null)
+			this.customParameters.put("server", launcherFrame.config.getString("server"));
 		
-		if(launcherFrame.config.get("port") != null)
-			this.customParameters.put("port", launcherFrame.config.get("port"));
+		if(launcherFrame.config.getString("port") != null)
+			this.customParameters.put("port", launcherFrame.config.getString("port"));
+		
+		if(launcherFrame.config.getString("latestVersion") != null)
+			this.customParameters.put("latestVersion", launcherFrame.config.getString("latestVersion"));
+		
+		if(launcherFrame.config.getString("downloadTicket") != null)
+			this.customParameters.put("downloadTicket", launcherFrame.config.getString("downloadTicket"));
+		
+		if(launcherFrame.config.getString("sessionID") != null)
+			this.customParameters.put("sessionID", launcherFrame.config.getString("sessionID"));
+		
+		this.customParameters.put("port", launcherFrame.config.getString("userName") == null ? "Player" : launcherFrame.config.getString("userName"));
 
 		this.updater = new GameUpdater(this.launcherFrame);
 		this.launcher = new GameLauncher(this.launcherFrame);
@@ -224,7 +235,7 @@ public class Launcher extends Applet implements Runnable, AppletStub,
 		} else {
 			g.setColor(Color.LIGHT_GRAY);
 
-			String msg = "Updating " + launcherFrame.config.get("gameName");
+			String msg = "Updating " + launcherFrame.config.getString("gameLauncher.gameName");
 			if (this.updater.fatalError) {
 				msg = "Failed to launch";
 			}
@@ -290,7 +301,7 @@ public class Launcher extends Applet implements Runnable, AppletStub,
 	
 	public URL getDocumentBase() {
 		try {
-			return new URL(launcherFrame.config.get("documentBaseURL"));
+			return new URL(launcherFrame.config.getString("gameLauncher.documentBaseURL"));
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}

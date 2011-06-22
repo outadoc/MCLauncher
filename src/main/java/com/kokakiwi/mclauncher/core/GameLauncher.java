@@ -42,7 +42,7 @@ public class GameLauncher implements Runnable {
 			});
 			File dir = new File(path);
 			updateClassPath(dir);
-			runGame();
+			//runGame();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -72,7 +72,7 @@ public class GameLauncher implements Runnable {
 						perms = (PermissionCollection) method.invoke(getClass()
 								.getClassLoader(), new Object[] { codesource });
 
-						String host = GameLauncher.this.launcherFrame.config.get("gameHost");
+						String host = GameLauncher.this.launcherFrame.config.getString("gameLauncher.gameHost");
 
 						if ((host != null) && (host.length() > 0)) {
 							perms.add(new SocketPermission(host,

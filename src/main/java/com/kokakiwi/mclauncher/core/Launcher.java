@@ -59,6 +59,12 @@ public class Launcher extends Applet implements Runnable, AppletStub,
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		if(launcherFrame.config.get("server") != null)
+			this.customParameters.put("server", launcherFrame.config.get("server"));
+		
+		if(launcherFrame.config.get("port") != null)
+			this.customParameters.put("port", launcherFrame.config.get("port"));
 
 		this.updater = new GameUpdater(this.launcherFrame);
 		this.launcher = new GameLauncher(this.launcherFrame);

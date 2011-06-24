@@ -3,6 +3,7 @@ package com.kokakiwi.mclauncher;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -31,6 +32,19 @@ public class LauncherFrame extends Frame {
 		
 		config.load(Utils.getResourceAsStream("config/config.yml"), "Yaml");
 		config.load(Utils.getResourceAsStream("config/launcher.properties"));
+		
+		File configFile = new File("./config.yml");
+		
+		if(!configFile.exists())
+		{
+			try {
+				configFile.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		config.load(configFile);
 		
 		setTitle(config.getString("launcher.windowTitle"));
 		setBackground(Color.BLACK);

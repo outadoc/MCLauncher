@@ -1,5 +1,8 @@
 package com.kokakiwi.mclauncher.utils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -12,6 +15,24 @@ import org.yaml.snakeyaml.Yaml;
 public class Configuration {
 	private Map<String, Object> config = new HashMap<String, Object>();
 	
+	public boolean load(File file)
+	{
+		String ext = file.getName().substring(file.getName().lastIndexOf(".") + 1);
+		String type;
+		if(ext.equals("yml"))
+		{
+			type = "yaml";
+		}else {
+			type = "";
+		}
+		try {
+			return load(new FileInputStream(file), type);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
 	public boolean load(InputStream inputStream)
 	{
 		return load(inputStream, "");
@@ -22,7 +43,11 @@ public class Configuration {
 	{
 		if(type.equalsIgnoreCase("yaml")) {
 			Yaml yamlParser = new Yaml();
-			config.putAll((Map<? extends String, ? extends Object>) yamlParser.load(inputFile));
+			Map<String, Object> data = (Map<String, Object>) yamlParser.load(inputFile);
+			if(data != null)
+			{
+				merge(data, config);
+			}
 		}else {
 			Properties props = new Properties();
 			
@@ -43,6 +68,25 @@ public class Configuration {
 		}
 		
 		return true;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void merge(Map<String, Object> from, Map<String, Object> to)
+	{
+		for(String key : from.keySet())
+		{
+			if(to.get(key) == null)
+			{
+				to.put(key, from.get(key));
+			}else {
+				if(to.get(key) instanceof Map)
+				{
+					merge((Map<String, Object>) from.get(key), (Map<String, Object>) to.get(key));
+				}else {
+					to.put(key, from.get(key));
+				}
+			}
+		}
 	}
 	
 	public void set(String name, Object value)

@@ -50,7 +50,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<finalName>MCLauncher</finalName>
+		<finalName>minecraft</finalName>
 	</build>
 	<dependencies>
 		<dependency>

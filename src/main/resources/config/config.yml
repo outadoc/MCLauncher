@@ -10,6 +10,7 @@ updater:
     jarFileName: 'minecraft.jar'
     folderName: 'minecraft'
     keyFileName: 'minecraft.key'
+    loginFileEncryptionKey: 'passwordfile'
     jarList:
         - 'http://s3.amazonaws.com/MinecraftDownload/lwjgl.jar'
         - 'http://s3.amazonaws.com/MinecraftDownload/jinput.jar'

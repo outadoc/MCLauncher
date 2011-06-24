@@ -15,7 +15,6 @@ import java.security.cert.Certificate;
 import javax.net.ssl.HttpsURLConnection;
 
 import com.kokakiwi.mclauncher.LauncherFrame;
-import com.kokakiwi.mclauncher.MCLauncher;
 
 public class Utils {
 	public static File workDir = null;
@@ -127,7 +126,6 @@ public class Utils {
 			String line;
 			while ((line = rd.readLine()) != null) {
 				response.append(line);
-				response.append('\r');
 			}
 			rd.close();
 

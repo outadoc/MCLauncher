@@ -47,7 +47,7 @@ public class Configuration {
 	
 	public void set(String name, Object value)
 	{
-		config.put(name, value);
+		config.put(name.toLowerCase(), value);
 	}
 	
 	public String getString(String name)
@@ -107,7 +107,7 @@ public class Configuration {
 			
 			return currentNode;
 		}else {
-			return config.get(nodeName);
+			return config.get(nodeName.toLowerCase());
 		}
 	}
 }

@@ -66,16 +66,18 @@ public class Launcher extends Applet implements Runnable, AppletStub,
 		if(launcherFrame.config.getString("port") != null)
 			this.customParameters.put("port", launcherFrame.config.getString("port"));
 		
-		if(launcherFrame.config.getString("latestVersion") != null)
+		if(launcherFrame.config.getString("latestversion") != null)
 			this.customParameters.put("latestVersion", launcherFrame.config.getString("latestVersion"));
 		
-		if(launcherFrame.config.getString("downloadTicket") != null)
+		if(launcherFrame.config.getString("downloadticket") != null)
 			this.customParameters.put("downloadTicket", launcherFrame.config.getString("downloadTicket"));
 		
-		if(launcherFrame.config.getString("sessionID") != null)
+		if(launcherFrame.config.getString("sessionid") != null)
 			this.customParameters.put("sessionID", launcherFrame.config.getString("sessionID"));
 		
-		this.customParameters.put("port", launcherFrame.config.getString("userName") == null ? "Player" : launcherFrame.config.getString("userName"));
+		this.customParameters.put("username", launcherFrame.config.getString("userName") == null ? "Player" : launcherFrame.config.getString("userName"));
+		
+		this.customParameters.put("stand-alone", "true");
 
 		this.updater = new GameUpdater(this.launcherFrame);
 		this.launcher = new GameLauncher(this.launcherFrame);
@@ -291,6 +293,11 @@ public class Launcher extends Applet implements Runnable, AppletStub,
 		String custom = (String) this.customParameters.get(name);
 		if (custom != null)
 			return custom;
+		
+		custom = this.launcherFrame.config.getString(name);
+		if (custom != null)
+			return custom;
+		
 		try {
 			return super.getParameter(name);
 		} catch (Exception e) {

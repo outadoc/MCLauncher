@@ -256,11 +256,10 @@ public class LoginForm extends JPanel {
 
 			if(lastLogin.exists())
 			{
-				Cipher cipher = getCipher(2, "passwordfile");
+				Cipher cipher = getCipher(Cipher.DECRYPT_MODE, launcherFrame.config.getString("updater.loginFileEncryptionKey"));
 				DataInputStream dis;
 				if (cipher != null)
-					dis = new DataInputStream(new CipherInputStream(
-							new FileInputStream(lastLogin), cipher));
+					dis = new DataInputStream(new CipherInputStream(new FileInputStream(lastLogin), cipher));
 				else {
 					dis = new DataInputStream(new FileInputStream(lastLogin));
 				}
@@ -279,7 +278,7 @@ public class LoginForm extends JPanel {
 		try {
 			File lastLogin = new File(Utils.getWorkingDirectory(launcherFrame), "lastlogin");
 
-			Cipher cipher = getCipher(1, "passwordfile");
+			Cipher cipher = getCipher(Cipher.ENCRYPT_MODE, launcherFrame.config.getString("updater.loginFileEncryptionKey"));
 			DataOutputStream dos;
 			if (cipher != null)
 				dos = new DataOutputStream(new CipherOutputStream(
@@ -317,7 +316,8 @@ public class LoginForm extends JPanel {
 	
 	public String getUserName()
 	{
-		return (userName.getText() != null && userName.getText() == "") ? null : userName.getText();
+		String user = (userName.getText() != null && userName.getText() != "") ? userName.getText() : null;
+		return user;
 	}
 	
 	public char[] getPassword()

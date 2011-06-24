@@ -171,12 +171,10 @@ public class GameUpdater implements Runnable {
 			if ((urlconnection instanceof HttpURLConnection)) {
 				((HttpURLConnection) urlconnection).setRequestMethod("HEAD");
 
-				String etagOnDisk = "\""
-						+ md5s.getProperty(getFileName(this.urlList[i])) + "\"";
+				String etagOnDisk = "\"" + md5s.getProperty(getFileName(this.urlList[i])) + "\"";
 
 				if ((!forceUpdate) && (etagOnDisk != null))
-					urlconnection.setRequestProperty("If-None-Match",
-							etagOnDisk);
+					urlconnection.setRequestProperty("If-None-Match",etagOnDisk);
 
 				int code = ((HttpURLConnection) urlconnection)
 						.getResponseCode();
@@ -246,7 +244,7 @@ public class GameUpdater implements Runnable {
 						this.currentSizeDownload += bufferSize;
 						fileSize += bufferSize;
 						launcher.setPercentage(initialPercentage + this.currentSizeDownload * 45 / this.totalSizeDownload);
-						launcher.subtaskMessage = ("Retrieving: " + currentFile
+						launcher.subtaskMessage = (launcherFrame.locale.getString("updater.retrieving") + ": " + currentFile
 								+ " " + this.currentSizeDownload * 100
 								/ this.totalSizeDownload + "%");
 
@@ -317,23 +315,23 @@ public class GameUpdater implements Runnable {
 			String filename = getFileName(this.urlList[i]);
 
 			if (filename.endsWith(".pack.lzma")) {
-				launcher.subtaskMessage = ("Extracting: " + filename + " to " + filename
+				launcher.subtaskMessage = (launcherFrame.locale.getString("updater.extracting") + ": " + filename + " " + launcherFrame.locale.getString("updater.extractTo") + " " + filename
 						.replaceAll(".lzma", ""));
 				extractLZMA(path + filename,
 						path + filename.replaceAll(".lzma", ""));
 
-				launcher.subtaskMessage = ("Extracting: "
-						+ filename.replaceAll(".lzma", "") + " to " + filename
+				launcher.subtaskMessage = (launcherFrame.locale.getString("updater.extracting") + ": "
+						+ filename.replaceAll(".lzma", "") + " " + launcherFrame.locale.getString("updater.extractTo") + " " + filename
 						.replaceAll(".pack.lzma", ""));
 				extractPack(path + filename.replaceAll(".lzma", ""), path
 						+ filename.replaceAll(".pack.lzma", ""));
 			} else if (filename.endsWith(".pack")) {
-				launcher.subtaskMessage = ("Extracting: " + filename + " to " + filename
+				launcher.subtaskMessage = (launcherFrame.locale.getString("updater.extracting") + ": " + filename + " " + launcherFrame.locale.getString("updater.extractTo") + " " + filename
 						.replace(".pack", ""));
 				extractPack(path + filename,
 						path + filename.replace(".pack", ""));
 			} else if (filename.endsWith(".lzma")) {
-				launcher.subtaskMessage = ("Extracting: " + filename + " to " + filename
+				launcher.subtaskMessage = (launcherFrame.locale.getString("updater.extracting") + ": " + filename + " " + launcherFrame.locale.getString("updater.extractTo") + " " + filename
 						.replace(".lzma", ""));
 				extractLZMA(path + filename,
 						path + filename.replace(".lzma", ""));
@@ -399,7 +397,7 @@ public class GameUpdater implements Runnable {
 
 				launcher.setPercentage(initialPercentage + this.currentSizeExtract
 						* 20 / this.totalSizeExtract);
-				launcher.subtaskMessage = ("Extracting: " + entry.getName() + " "
+				launcher.subtaskMessage = (launcherFrame.locale.getString("updater.extracting") + ": " + entry.getName() + " "
 						+ this.currentSizeExtract * 100 / this.totalSizeExtract + "%");
 			}
 

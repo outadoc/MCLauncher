@@ -51,11 +51,11 @@ public class LoginForm extends JPanel {
 	private JScrollPane scrollPane = null;
 	public JTextField userName = new JTextField(20);
 	public JPasswordField password = new JPasswordField(20);
-	private TransparentCheckbox rememberBox = new TransparentCheckbox("Remember password");
-	private TransparentButton launchButton = new TransparentButton("Login");
-	private TransparentButton optionsButton = new TransparentButton("Options");
-	private TransparentButton retryButton = new TransparentButton("Try again");
-	private TransparentButton offlineButton = new TransparentButton("Play offline");
+	private TransparentCheckbox rememberBox;
+	private TransparentButton launchButton;
+	private TransparentButton optionsButton;
+	private TransparentButton retryButton;
+	private TransparentButton offlineButton;
 	private TransparentLabel statusText = new TransparentLabel("", 0);
 	private JPanel southPanel = new TexturedPanel();
 	
@@ -64,6 +64,12 @@ public class LoginForm extends JPanel {
 		this.launcherFrame = launcherFrame;
 		
 		setLayout(new BorderLayout());
+		
+		rememberBox = new TransparentCheckbox(launcherFrame.locale.getString("login.rememberBox"));
+		launchButton = new TransparentButton(launcherFrame.locale.getString("login.launchButton"));
+		optionsButton = new TransparentButton(launcherFrame.locale.getString("login.optionsButton"));
+		retryButton = new TransparentButton(launcherFrame.locale.getString("login.retryButton"));
+		offlineButton = new TransparentButton(launcherFrame.locale.getString("login.offlineButton"));
 		
 		readUsername();
 		
@@ -116,8 +122,8 @@ public class LoginForm extends JPanel {
 		TransparentPanel titles = new TransparentPanel(gl1);
 		TransparentPanel values = new TransparentPanel(gl2);
 
-		titles.add(new TransparentLabel("Username:", 4));
-		titles.add(new TransparentLabel("Password:", 4));
+		titles.add(new TransparentLabel(launcherFrame.locale.getString("login.userLabel") + ":", 4));
+		titles.add(new TransparentLabel(launcherFrame.locale.getString("login.passwordLabel") +":", 4));
 		titles.add(new TransparentLabel("", 4));
 		
 		values.add(this.userName);
@@ -149,7 +155,7 @@ public class LoginForm extends JPanel {
 		if(this.scrollPane != null) return this.scrollPane;
 		try {
 			final JTextPane editorPane = new JTextPane();
-			editorPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><br><br><center>Loading update news..</center></font></body></html>");
+			editorPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><br><br><center>" + launcherFrame.locale.getString("launcher.loadBrowser") + "</center></font></body></html>");
 			editorPane.addHyperlinkListener(new HyperlinkListener() {
 				
 				public void hyperlinkUpdate(HyperlinkEvent he) {
@@ -217,8 +223,8 @@ public class LoginForm extends JPanel {
 		TransparentPanel titles = new TransparentPanel(gl1);
 		TransparentPanel values = new TransparentPanel(gl2);
 
-		titles.add(new TransparentLabel("Username:", 4));
-		titles.add(new TransparentLabel("Password:", 4));
+		titles.add(new TransparentLabel(launcherFrame.locale.getString("login.userLabel") + ":", 4));
+		titles.add(new TransparentLabel(launcherFrame.locale.getString("login.passwordLabel") +":", 4));
 		titles.add(new TransparentLabel("", 4));
 		
 		values.add(this.userName);
@@ -265,8 +271,7 @@ public class LoginForm extends JPanel {
 				}
 				this.userName.setText(dis.readUTF());
 				this.password.setText(dis.readUTF());
-				this.rememberBox
-						.setSelected(this.password.getPassword().length > 0);
+				this.rememberBox.setSelected(this.password.getPassword().length > 0);
 				dis.close();
 			}
 		} catch (Exception e) {

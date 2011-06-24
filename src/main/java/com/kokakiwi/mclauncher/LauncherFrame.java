@@ -15,6 +15,7 @@ import javax.swing.*;
 import com.kokakiwi.mclauncher.core.Launcher;
 import com.kokakiwi.mclauncher.graphics.LoginForm;
 import com.kokakiwi.mclauncher.utils.Configuration;
+import com.kokakiwi.mclauncher.utils.LocalString;
 import com.kokakiwi.mclauncher.utils.StringFormatter;
 import com.kokakiwi.mclauncher.utils.Utils;
 
@@ -26,6 +27,7 @@ public class LauncherFrame extends Frame {
 	public JPanel panel;
 	public LoginForm loginForm;
 	public Launcher launcher;
+	public LocalString locale;
 
 	public LauncherFrame() {
 		super();
@@ -45,6 +47,8 @@ public class LauncherFrame extends Frame {
 		}
 		
 		config.load(configFile);
+		
+		locale = new LocalString(this, config.getStringList("launcher.langs"));
 		
 		setTitle(config.getString("launcher.windowTitle"));
 		setBackground(Color.BLACK);
@@ -100,7 +104,7 @@ public class LauncherFrame extends Frame {
 			playOffline();
 		}else {
 			try {
-				loginForm.setStatusText("Logging in...");
+				loginForm.setStatusText(locale.getString("login.loggingIn"));
 				Map<String, String> keys = new HashMap<String, String>();
 				keys.put("USERNAME", URLEncoder.encode(loginForm.getUserName(), "UTF-8"));
 				keys.put("PASSWORD", URLEncoder.encode(new String(loginForm.getPassword())));
@@ -109,15 +113,15 @@ public class LauncherFrame extends Frame {
 				if(result == null)
 				{
 					loginForm.askOfflineMode();
-					loginForm.setStatusText("Can't connect to login website.");
+					loginForm.setStatusText(locale.getString("launcher.loginError"));
 					return;
 				}
 				if(!result.contains(":"))
 				{
 					if (result.trim().equals("Bad login")) {
-						loginForm.setStatusText("Login failed!");
+						loginForm.setStatusText(locale.getString("launcher.badLogin"));
 					}else if (result.trim().equals("Old version")) {
-						loginForm.setStatusText("Outdated launcher");
+						loginForm.setStatusText(locale.getString("launcher.oldVersion"));
 					}else {
 						loginForm.setStatusText(result);
 					}

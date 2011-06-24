@@ -1,16 +1,16 @@
 package com.kokakiwi.mclauncher.utils;
 
 public enum State {
-	INIT(1, "Initializing loader"),
-	DETERMINING_PACKAGE(2, "Determining packages to load"),
-	CHECKING_CACHE(3, "Checking cache for existing files"),
-	DOWNLOADING(4, "Downloading packages"),
-	EXTRACTING_PACKAGES(5, "Extracting downloaded packages"),
-	UPDATING_CLASSPATH(6, "Updating classpath"),
-	SWITCHING_APPLET(7, "Switching applet"),
-	INITIALIZE_REAL_APPLET(8, "Initializing real applet"),
-	START_REAL_APPLET(9 ,"Starting real applet"),
-	DONE(10, "Done loading");
+	INIT(1),
+	DETERMINING_PACKAGE(2),
+	CHECKING_CACHE(3),
+	DOWNLOADING(4),
+	EXTRACTING_PACKAGES(5),
+	UPDATING_CLASSPATH(6),
+	SWITCHING_APPLET(7),
+	INITIALIZE_REAL_APPLET(8),
+	START_REAL_APPLET(9),
+	DONE(10);
 	
 	private int opcode;
 	private String description;

@@ -36,7 +36,7 @@ public class OptionsPanel extends JDialog {
 
 		public void actionPerformed(ActionEvent arg0) {
 			launcherFrame.config.set("force-update", "true");
-			this.forceButton.setText("Will force!");
+			this.forceButton.setText(OptionsPanel.this.launcherFrame.locale.getString("options.willForce"));
 			this.forceButton.setEnabled(false);
 		}
 
@@ -60,17 +60,17 @@ public class OptionsPanel extends JDialog {
 		optionsPanel.add(labelPanel, "West");
 		optionsPanel.add(fieldPanel, "Center");
 
-		JButton forceButton = new JButton("Force update!");
+		JButton forceButton = new JButton(launcherFrame.locale.getString("options.forceUpdate"));
 		if(launcherFrame.config.getString("force-update") != null)
 		{
 			forceButton.setEnabled(false);
-			forceButton.setText("Will force!");
+			forceButton.setText(launcherFrame.locale.getString("options.willForce"));
 		}
 		forceButton.addActionListener(new AL(forceButton));
-		labelPanel.add(new JLabel("Force game update: ", 4));
+		labelPanel.add(new JLabel(launcherFrame.locale.getString("options.forceUpdateLabel") + ": ", 4));
 		fieldPanel.add(forceButton);
 
-		labelPanel.add(new JLabel("Game location on disk: ", 4));
+		labelPanel.add(new JLabel(launcherFrame.locale.getString("options.gameLocationLabel") + ": ", 4));
 		TransparentLabel dirLink = new TransparentLabel(Utils.getWorkingDirectory(launcherFrame).toString()) {
 			private static final long serialVersionUID = 0L;
 

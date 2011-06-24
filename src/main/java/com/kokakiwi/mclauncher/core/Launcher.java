@@ -188,6 +188,8 @@ public class Launcher extends Applet implements Runnable, AppletStub,
 		this.active = true;
 		applet.start();
 		validate();
+		
+		launcherFrame.setTitle(launcherFrame.config.getString("gameLauncher.gameName"));
 	}
 
 	public void paint(Graphics g2) {
@@ -212,7 +214,7 @@ public class Launcher extends Applet implements Runnable, AppletStub,
 				addMouseListener(this);
 			}
 			g.setColor(Color.LIGHT_GRAY);
-			String msg = "New update available";
+			String msg = launcherFrame.locale.getString("updater.newUpdateAvailable");
 			g.setFont(new Font(null, 1, 20));
 			FontMetrics fm = g.getFontMetrics();
 			g.drawString(msg, w / 2 - fm.stringWidth(msg) / 2,
@@ -224,20 +226,20 @@ public class Launcher extends Applet implements Runnable, AppletStub,
 			g.fill3DRect(w / 2 - 56 - 8, h / 2, 56, 20, true);
 			g.fill3DRect(w / 2 + 8, h / 2, 56, 20, true);
 
-			msg = "Would you like to update?";
+			msg = launcherFrame.locale.getString("updater.askUpdate");
 			g.drawString(msg, w / 2 - fm.stringWidth(msg) / 2, h / 2 - 8);
 
 			g.setColor(Color.BLACK);
-			msg = "Yes";
+			msg = launcherFrame.locale.getString("global.yes");
 			g.drawString(msg, w / 2 - 56 - 8 - fm.stringWidth(msg) / 2 + 28,
 					h / 2 + 14);
-			msg = "Not now";
+			msg = launcherFrame.locale.getString("global.no");
 			g.drawString(msg, w / 2 + 8 - fm.stringWidth(msg) / 2 + 28,
 					h / 2 + 14);
 		} else {
 			g.setColor(Color.LIGHT_GRAY);
 
-			String msg = "Updating " + launcherFrame.config.getString("gameLauncher.gameName");
+			String msg = launcherFrame.locale.getString("updater.title");
 			if (this.updater.fatalError) {
 				msg = "Failed to launch";
 			}
@@ -278,7 +280,10 @@ public class Launcher extends Applet implements Runnable, AppletStub,
 	}
 
 	private String getDescriptionForState() {
-		return this.state.getDescription();
+		if(this.state.getDescription() != null)
+			return this.state.getDescription();
+		else
+			return launcherFrame.locale.getString("updater.states." + this.state.name());
 	}
 
 	public void update(Graphics g) {

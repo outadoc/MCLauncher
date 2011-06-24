@@ -4,6 +4,9 @@ launcher:
     loginURL: 'https://login.minecraft.net/'
     loginParameters: 'user={USERNAME}&password={PASSWORD}&version=13'
     offlineMode: false
+    langs:
+        - 'fr_FR'
+        - 'en_US'
 updater:
     customGameDir: false
     gameDir: ''

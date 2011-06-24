@@ -15,9 +15,11 @@ import java.security.cert.Certificate;
 import javax.net.ssl.HttpsURLConnection;
 
 import com.kokakiwi.mclauncher.LauncherFrame;
+import com.kokakiwi.mclauncher.core.wrapper.JavaUtils;
 
 public class Utils {
 	public static File workDir = null;
+	public static JavaUtils JavaUtils;
 	
 	public static InputStream getResourceAsStream(String url)
 	{

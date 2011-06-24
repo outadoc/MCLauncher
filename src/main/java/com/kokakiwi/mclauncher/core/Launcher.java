@@ -28,7 +28,7 @@ public class Launcher extends Applet implements Runnable, AppletStub,
 	private static final long serialVersionUID = -2433230602156426362L;
 
 	private LauncherFrame launcherFrame;
-	private Applet applet;
+	public Applet applet;
 	private Image bgImage;
 	private int context = 0;
 	private boolean active = false;
@@ -77,7 +77,7 @@ public class Launcher extends Applet implements Runnable, AppletStub,
 		
 		this.customParameters.put("username", launcherFrame.config.getString("userName") == null ? "Player" : launcherFrame.config.getString("userName"));
 		
-		this.customParameters.put("stand-alone", "true");
+		//this.customParameters.put("stand-alone", "true");
 
 		this.updater = new GameUpdater(this.launcherFrame);
 		this.launcher = new GameLauncher(this.launcherFrame);

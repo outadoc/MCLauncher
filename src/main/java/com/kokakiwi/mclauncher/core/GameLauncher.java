@@ -2,20 +2,15 @@ package com.kokakiwi.mclauncher.core;
 
 import java.applet.Applet;
 import java.io.File;
-import java.io.FilePermission;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.SocketPermission;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessController;
-import java.security.CodeSource;
-import java.security.PermissionCollection;
 import java.security.PrivilegedExceptionAction;
-import java.security.SecureClassLoader;
 import java.util.Vector;
 
 import com.kokakiwi.mclauncher.LauncherFrame;
+import com.kokakiwi.mclauncher.core.wrapper.Wrapper;
 import com.kokakiwi.mclauncher.utils.State;
 import com.kokakiwi.mclauncher.utils.Utils;
 
@@ -23,7 +18,8 @@ public class GameLauncher implements Runnable {
 	private LauncherFrame launcherFrame;
 	private Launcher launcher;
 	private boolean natives_loaded;
-	private static ClassLoader classLoader;
+	public ClassLoader classLoader;
+	public Wrapper wrapper;
 
 	public GameLauncher(LauncherFrame launcherFrame)
 	{
@@ -59,36 +55,7 @@ public class GameLauncher implements Runnable {
 		}
 
 		if (classLoader == null) {
-			classLoader = new URLClassLoader(urls) {
-				protected PermissionCollection getPermissions(
-						CodeSource codesource) {
-					PermissionCollection perms = null;
-					try {
-						Method method = SecureClassLoader.class
-								.getDeclaredMethod("getPermissions",
-										new Class[] { CodeSource.class });
-
-						method.setAccessible(true);
-						perms = (PermissionCollection) method.invoke(getClass()
-								.getClassLoader(), new Object[] { codesource });
-
-						String host = GameLauncher.this.launcherFrame.config.getString("gameLauncher.gameHost");
-
-						if ((host != null) && (host.length() > 0)) {
-							perms.add(new SocketPermission(host,
-									"connect,accept"));
-						} else
-							codesource.getLocation().getProtocol()
-									.equals("file");
-
-						perms.add(new FilePermission("<<ALL FILES>>", "read"));
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-
-					return perms;
-				}
-			};
+			classLoader = new URLClassLoader(urls);
 		}
 		String path = dir.getAbsolutePath();
 		if (!path.endsWith(File.separator))
@@ -130,21 +97,15 @@ public class GameLauncher implements Runnable {
 	{
 		launcher.setState(State.DONE);
 		launcher.setPercentage(100);
-		try {
-			launcher.replace(createApplet());
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
+		
+		wrapper = new Wrapper(launcherFrame);
+		wrapper.init();
+		if(wrapper.createApplet())
+			launcher.replace(wrapper.getApplet());
 	}
 
-	public Applet createApplet() throws ClassNotFoundException,
-			InstantiationException, IllegalAccessException {
-		Class<?> appletClass = classLoader
-				.loadClass("net.minecraft.client.MinecraftApplet");
+	public Applet createApplet() throws ClassNotFoundException,	InstantiationException, IllegalAccessException {
+		Class<?> appletClass = classLoader.loadClass("net.minecraft.client.MinecraftApplet");
 		return (Applet) appletClass.newInstance();
 	}
 

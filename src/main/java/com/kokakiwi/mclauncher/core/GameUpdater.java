@@ -221,7 +221,8 @@ public class GameUpdater implements Runnable {
 						urlconnection.connect();
 
 						etag = urlconnection.getHeaderField("ETag");
-						etag = etag.substring(1, etag.length() - 1);
+						if(etag != null)
+							etag = etag.substring(1, etag.length() - 1);
 					}
 
 					String currentFile = getFileName(this.urlList[i]);
@@ -237,8 +238,7 @@ public class GameUpdater implements Runnable {
 
 					MessageDigest m = MessageDigest.getInstance("MD5");
 					int bufferSize;
-					while ((bufferSize = inputstream.read(buffer, 0,
-							buffer.length)) != -1) {
+					while ((bufferSize = inputstream.read(buffer, 0, buffer.length)) != -1) {
 						fos.write(buffer, 0, bufferSize);
 						m.update(buffer, 0, bufferSize);
 						this.currentSizeDownload += bufferSize;
@@ -277,11 +277,10 @@ public class GameUpdater implements Runnable {
 					}
 
 					if ((urlconnection instanceof HttpURLConnection)) {
-						if ((md5Matches)
-								&& ((fileSize == fileSizes[i]) || (fileSizes[i] <= 0))) {
+						if ((md5Matches) && ((fileSize == fileSizes[i]) || (fileSizes[i] <= 0))) {
 							try {
 								md5s.setProperty(getFileName(this.urlList[i]),
-										etag);
+										etag != null ? etag : "");
 								md5s.store(new FileOutputStream(versionFile),
 										"md5 hashes for downloaded files");
 							} catch (Exception e) {
@@ -293,8 +292,7 @@ public class GameUpdater implements Runnable {
 								downloadFile = true;
 								this.currentSizeDownload -= fileSize;
 							} else {
-								throw new Exception("failed to download "
-										+ currentFile);
+								throw new Exception("failed to download " + currentFile);
 							}
 						}
 					}

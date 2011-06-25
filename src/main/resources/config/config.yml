@@ -10,7 +10,6 @@ launcher:
 updater:
     customGameDir: false
     gameDir: ''
-    jarFileName: 'minecraft.jar'
     folderName: 'minecraft'
     keyFileName: 'minecraft.key'
     loginFileEncryptionKey: 'passwordfile'

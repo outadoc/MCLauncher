@@ -22,7 +22,7 @@ updater:
     nativesList:
         windows: 'http://s3.amazonaws.com/MinecraftDownload/windows_natives.jar.lzma'
         linux: 'http://s3.amazonaws.com/MinecraftDownload/linux_natives.jar.lzma'
-        macosx: 'http://s3.amazonaws.com/MinecraftDownload/macosx_natives.jar.lzma'
+        macos: 'http://s3.amazonaws.com/MinecraftDownload/macosx_natives.jar.lzma'
         solaris: 'http://s3.amazonaws.com/MinecraftDownload/solaris_natives.jar.lzma'
 gameLauncher:
     gameName: 'Minecraft'

@@ -124,12 +124,12 @@ public class GameUpdater implements Runnable {
 		String nativeJar = null;
 		
 		if(osName == Utils.OS.unknown)
-			fatalErrorOccured("OS (" + System.getProperty("os.name") + ") not supported", null);
+			fatalErrorOccured("OS (" + System.getProperty("os.name") + ") not supported");
 		else
 			nativeJar = launcherFrame.config.getString("updater.nativesList." + osName.name());
 
 		if (nativeJar == null) {
-			fatalErrorOccured("no lwjgl natives files found", null);
+			fatalErrorOccured("no lwjgl natives files found");
 		} else {
 			nativeJar = trimExtensionByCapabilities(nativeJar);
 			this.urlList[jarList.size()] = new URL(nativeJar);
@@ -425,7 +425,6 @@ public class GameUpdater implements Runnable {
 	
 	protected String getJarName(URL url) {
 		String fileName = url.getFile();
-
 		if (fileName.contains("?")) {
 			fileName = fileName.substring(0, fileName.indexOf("?"));
 		}
@@ -436,12 +435,10 @@ public class GameUpdater implements Runnable {
 		else if (fileName.endsWith(".lzma")) {
 			fileName = fileName.replaceAll(".lzma", "");
 		}
-
 		return fileName.substring(fileName.lastIndexOf('/') + 1);
 	}
 	
-	protected void fatalErrorOccured(String error, Exception e) {
-		e.printStackTrace();
+	protected void fatalErrorOccured(String error) {
 		this.fatalError = true;
 		this.fatalErrorDescription = ("Fatal error occured (" + launcher.getState()
 				+ "): " + error);

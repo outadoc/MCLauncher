@@ -254,6 +254,7 @@ public class Launcher extends Applet implements Runnable, AppletStub,
 			msg = this.getDescriptionForState();
 			if (this.updater.fatalError) {
 				msg = this.updater.fatalErrorDescription;
+				this.subtaskMessage = "";
 			}
 
 			g.drawString(msg, w / 2 - fm.stringWidth(msg) / 2,

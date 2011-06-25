@@ -76,11 +76,9 @@ public class Utils {
 		try {
 			URL url = new URL(targetURL);
 			if(protocol.contains("https"))
-			{
 				connection = (HttpsURLConnection) url.openConnection();
-			}else {
+			else
 				connection = (HttpURLConnection) url.openConnection();
-			}
 			connection.setRequestMethod("POST");
 			connection.setRequestProperty("Content-Type",
 					"application/x-www-form-urlencoded");

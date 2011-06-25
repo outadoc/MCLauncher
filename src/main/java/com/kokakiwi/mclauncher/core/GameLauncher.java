@@ -3,6 +3,7 @@ package com.kokakiwi.mclauncher.core;
 import java.applet.Applet;
 import java.io.File;
 import java.lang.reflect.Field;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessController;
@@ -29,42 +30,51 @@ public class GameLauncher implements Runnable {
 
 	public void run() {
 		try {
-			String path = (String) AccessController
-			.doPrivileged(new PrivilegedExceptionAction<Object>() {
-				public Object run() throws Exception {
-					return Utils.getWorkingDirectory(launcherFrame)
-							+ File.separator + "bin" + File.separator;
-				}
-			});
-			File dir = new File(path);
-			updateClassPath(dir);
-			runGame();
+			if(!launcherFrame.launcher.updater.fatalError)
+			{
+				String path = (String) AccessController
+				.doPrivileged(new PrivilegedExceptionAction<Object>() {
+					public Object run() throws Exception {
+						return Utils.getWorkingDirectory(launcherFrame)
+								+ File.separator + "bin" + File.separator;
+					}
+				});
+				File dir = new File(path);
+				updateClassPath(dir);
+				runGame();
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	protected void updateClassPath(File dir) throws Exception {
+	protected void updateClassPath(File dir) {
 		launcher.setState(State.UPDATING_CLASSPATH);
 		launcher.setPercentage(95);
 
-		URL[] urls = new URL[launcher.updater.urlList.length];
-		for (int i = 0; i < launcher.updater.urlList.length; i++) {
-			urls[i] = new File(dir, launcher.updater.getJarName(launcher.updater.urlList[i])).toURI()
-					.toURL();
+		int urlNumber = launcher.updater.urlList.length;
+		URL[] urls = new URL[urlNumber];
+		for (int i = 0; i < urlNumber; i++) {
+			try {
+				String fileName = launcher.updater.getJarName(launcher.updater.urlList[i]);
+				urls[i] = new File(dir, fileName).toURI().toURL();
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
 		}
 
 		if (classLoader == null) {
 			classLoader = new URLClassLoader(urls);
 		}
+		
 		String path = dir.getAbsolutePath();
 		if (!path.endsWith(File.separator))
 			path = path + File.separator;
+
 		unloadNatives(path);
 
 		System.setProperty("org.lwjgl.librarypath", path + "natives");
 		System.setProperty("net.java.games.input.librarypath", path + "natives");
-
 		natives_loaded = true;
 	}
 	
@@ -77,7 +87,6 @@ public class GameLauncher implements Runnable {
 					.getDeclaredField("loadedLibraryNames");
 			field.setAccessible(true);
 			Vector<?> libs = (Vector<?>) field.get(getClass().getClassLoader());
-
 			String path = new File(nativePath).getCanonicalPath();
 
 			for (int i = 0; i < libs.size(); i++) {
@@ -88,6 +97,7 @@ public class GameLauncher implements Runnable {
 					i--;
 				}
 			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

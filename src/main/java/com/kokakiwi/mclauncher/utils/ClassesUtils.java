@@ -11,81 +11,100 @@ import javax.swing.JTextPane;
 
 import com.kokakiwi.mclauncher.LauncherFrame;
 
-public class ClassesUtils {
+public class ClassesUtils
+{
 
-	public static class LaunchActionListener implements ActionListener {
-		private LauncherFrame launcherFrame;
-		
-		public LaunchActionListener(LauncherFrame launcherFrame)
-		{
-			this.launcherFrame = launcherFrame;
-		}
+    public static class LaunchActionListener implements ActionListener
+    {
+        private final LauncherFrame launcherFrame;
 
-		public void actionPerformed(ActionEvent paramActionEvent) {
-			this.launcherFrame.doLogin();
-		}
+        public LaunchActionListener(LauncherFrame launcherFrame)
+        {
+            this.launcherFrame = launcherFrame;
+        }
 
-	}
-	
-	public static class TryAgainActionListener implements ActionListener {
-		private LauncherFrame launcherFrame;
-		
-		public TryAgainActionListener(LauncherFrame launcherFrame)
-		{
-			this.launcherFrame = launcherFrame;
-		}
+        public void actionPerformed(ActionEvent paramActionEvent)
+        {
+            launcherFrame.doLogin();
+        }
 
-		public void actionPerformed(ActionEvent paramActionEvent) {
-			this.launcherFrame.loginForm.loginMode();
-		}
+    }
 
-	}
-	
-	public static class PlayOfflineActionListener implements ActionListener {
-		private LauncherFrame launcherFrame;
-		
-		public PlayOfflineActionListener(LauncherFrame launcherFrame)
-		{
-			this.launcherFrame = launcherFrame;
-		}
+    public static class TryAgainActionListener implements ActionListener
+    {
+        private final LauncherFrame launcherFrame;
 
-		public void actionPerformed(ActionEvent paramActionEvent) {
-			this.launcherFrame.playOffline();
-		}
+        public TryAgainActionListener(LauncherFrame launcherFrame)
+        {
+            this.launcherFrame = launcherFrame;
+        }
 
-	}
+        public void actionPerformed(ActionEvent paramActionEvent)
+        {
+            launcherFrame.loginForm.loginMode();
+        }
 
-	public static class BrowserThread extends Thread {
-		private JTextPane editorPane;
-		public String url;
-		
-		public BrowserThread(JTextPane editorPane, String url)
-		{
-			this.editorPane = editorPane;
-			this.url = url;
-		}
+    }
 
-		@Override
-		public void run() {
-			try {
-				editorPane.setPage(new URL(this.url));
-			} catch (Exception e) {
-				editorPane.setText("<html><body>Error during loading page.</body></html>");
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	public static class GameUpdaterThread extends Thread {
-		public InputStream[] is;
-		public URLConnection urlconnection;
+    public static class PlayOfflineActionListener implements ActionListener
+    {
+        private final LauncherFrame launcherFrame;
 
-		public void run() {
-			try {
-				this.is[0] = this.urlconnection.getInputStream();
-			} catch (IOException localIOException) {
-			}
-		}
-	}
-	
+        public PlayOfflineActionListener(LauncherFrame launcherFrame)
+        {
+            this.launcherFrame = launcherFrame;
+        }
+
+        public void actionPerformed(ActionEvent paramActionEvent)
+        {
+            launcherFrame.playOffline();
+        }
+
+    }
+
+    public static class BrowserThread extends Thread
+    {
+        private final JTextPane editorPane;
+        public String           url;
+
+        public BrowserThread(JTextPane editorPane, String url)
+        {
+            this.editorPane = editorPane;
+            this.url = url;
+        }
+
+        @Override
+        public void run()
+        {
+            try
+            {
+                editorPane.setPage(new URL(url));
+            }
+            catch (Exception e)
+            {
+                editorPane
+                        .setText("<html><body>Error during loading page.</body></html>");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static class GameUpdaterThread extends Thread
+    {
+        public InputStream[] is;
+        public URLConnection urlconnection;
+
+        @Override
+        public void run()
+        {
+            try
+            {
+                is[0] = urlconnection.getInputStream();
+            }
+            catch (IOException localIOException)
+            {
+            }
+        }
+    }
+
 }

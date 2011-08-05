@@ -3,14 +3,14 @@ launcher:
     browserHomeURL: 'http://mcupdate.tumblr.com/'
     loginURL: 'https://login.minecraft.net/'
     loginParameters: 'user={USERNAME}&password={PASSWORD}&version=13'
-    offlineMode: false
+    offlineMode: true
     langs:
         - 'fr_FR'
         - 'en_US'
 updater:
     customGameDir: false
     gameDir: ''
-    folderName: 'minecraft'
+    folderName: 'minecraft-launcher'
     keyFileName: 'minecraft.key'
     loginFileEncryptionKey: 'passwordfile'
     jarList:
@@ -18,6 +18,8 @@ updater:
         - 'http://s3.amazonaws.com/MinecraftDownload/jinput.jar'
         - 'http://s3.amazonaws.com/MinecraftDownload/lwjgl_util.jar'
         - 'http://s3.amazonaws.com/MinecraftDownload/minecraft.jar'
+    additionalsFiles:
+        - null
     nativesList:
         windows: 'http://s3.amazonaws.com/MinecraftDownload/windows_natives.jar.lzma'
         linux: 'http://s3.amazonaws.com/MinecraftDownload/linux_natives.jar.lzma'

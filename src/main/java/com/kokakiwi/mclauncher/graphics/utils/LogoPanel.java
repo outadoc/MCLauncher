@@ -15,31 +15,31 @@ public class LogoPanel extends JPanel
 {
     private static final long serialVersionUID = -6001125578594995289L;
     private Image             bgImage;
-
+    
     public LogoPanel()
     {
         setOpaque(true);
         try
         {
-            BufferedImage src = ImageIO.read(Utils
+            final BufferedImage src = ImageIO.read(Utils
                     .getResourceAsStream("res/logo.png"));
-            int w = src.getWidth();
-            int h = src.getHeight();
+            final int w = src.getWidth();
+            final int h = src.getHeight();
             bgImage = src.getScaledInstance(w, h, 16);
             setPreferredSize(new Dimension(w + 32, h + 32));
         }
-        catch (IOException e)
+        catch (final IOException e)
         {
             e.printStackTrace();
         }
     }
-
+    
     @Override
     public void update(Graphics g)
     {
         paint(g);
     }
-
+    
     @Override
     public void paintComponent(Graphics g)
     {

@@ -1,8 +1,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>C:\Workspace\Personal\MCLauncher\target\minecraft.jar</jar>
-  <outfile>C:\Workspace\Personal\MCLauncher\target\minecraft.exe</outfile>
+  <jar>C:\Workspace\Java\MCLauncher\target\minecraft.jar</jar>
+  <outfile>C:\Workspace\Java\MCLauncher\target\minecraft.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir></chdir>
@@ -12,7 +12,7 @@
   <customProcName>false</customProcName>
   <stayAlive>false</stayAlive>
   <manifest></manifest>
-  <icon>C:\Workspace\Personal\MCLauncher\favicon.ico</icon>
+  <icon>C:\Workspace\Java\MCLauncher\favicon.ico</icon>
   <jre>
     <path></path>
     <minVersion>1.4.0</minVersion>

@@ -12,46 +12,50 @@ public class Wrapper
 {
     private final LauncherFrame launcherFrame;
     private final ClassLoader   classLoader;
-
+    
     private Applet              applet;
-
+    
     public Wrapper(LauncherFrame launcherFrame)
     {
         this.launcherFrame = launcherFrame;
         classLoader = launcherFrame.launcher.launcher.classLoader;
     }
-
+    
     public void init()
     {
         // Make Minecraft portable ! :D
+        final File workDirectory = Utils.getWorkingDirectory(launcherFrame);
+        System.getenv().put("APPDATA", workDirectory.getAbsolutePath());
+        System.setProperty("user.home", workDirectory.getAbsolutePath());
+        
         try
         {
-            List<Field> fields = JavaUtils.getFieldsWithType(
+            final List<Field> fields = JavaUtils.getFieldsWithType(
                     classLoader.loadClass("net.minecraft.client.Minecraft"),
                     File.class);
-            for (Field field : fields)
+            for (final Field field : fields)
             {
                 field.setAccessible(true);
                 try
                 {
                     field.get(classLoader
                             .loadClass("net.minecraft.client.Minecraft"));
-                    field.set(null, Utils.getWorkingDirectory(launcherFrame));
+                    field.set(null, workDirectory);
                 }
-                catch (IllegalArgumentException e)
+                catch (final IllegalArgumentException e)
                 {
                 }
-                catch (IllegalAccessException e)
+                catch (final IllegalAccessException e)
                 {
                 }
             }
         }
-        catch (ClassNotFoundException e)
+        catch (final ClassNotFoundException e)
         {
             e.printStackTrace();
         }
     }
-
+    
     public boolean createApplet()
     {
         try
@@ -59,21 +63,21 @@ public class Wrapper
             applet = launcherFrame.launcher.launcher.createApplet();
             return true;
         }
-        catch (ClassNotFoundException e)
+        catch (final ClassNotFoundException e)
         {
             e.printStackTrace();
         }
-        catch (InstantiationException e)
+        catch (final InstantiationException e)
         {
             e.printStackTrace();
         }
-        catch (IllegalAccessException e)
+        catch (final IllegalAccessException e)
         {
             e.printStackTrace();
         }
         return false;
     }
-
+    
     public Applet getApplet()
     {
         return applet;

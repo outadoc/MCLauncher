@@ -46,9 +46,9 @@ import com.kokakiwi.mclauncher.utils.Utils;
 public class LoginForm extends JPanel
 {
     private static final long         serialVersionUID = -2684390357579600827L;
-
+    
     private final LauncherFrame       launcherFrame;
-
+    
     private JScrollPane               scrollPane       = null;
     public JTextField                 userName         = new JTextField(20);
     public JPasswordField             password         = new JPasswordField(20);
@@ -60,13 +60,13 @@ public class LoginForm extends JPanel
     private final TransparentLabel    statusText       = new TransparentLabel(
                                                                "", 0);
     private final JPanel              southPanel       = new TexturedPanel();
-
+    
     public LoginForm(LauncherFrame launcherFrame)
     {
         this.launcherFrame = launcherFrame;
-
+        
         setLayout(new BorderLayout());
-
+        
         rememberBox = new TransparentCheckbox(
                 launcherFrame.locale.getString("login.rememberBox"));
         launchButton = new TransparentButton(
@@ -77,26 +77,29 @@ public class LoginForm extends JPanel
                 launcherFrame.locale.getString("login.retryButton"));
         offlineButton = new TransparentButton(
                 launcherFrame.locale.getString("login.offlineButton"));
-
+        
         readUsername();
-
+        
         add(buildMainLoginPanel(), "Center");
     }
-
+    
     private JPanel buildMainLoginPanel()
     {
-        JPanel panel = new TransparentPanel(new BorderLayout());
-
-        panel.add(getUpdateNews(), "Center");
-
+        final JPanel panel = new TransparentPanel(new BorderLayout());
+        
+        if (System.getenv("debugMode") == null)
+        {
+            panel.add(getUpdateNews(), "Center");
+        }
+        
         southPanel.setLayout(new BorderLayout());
         southPanel.add(new LogoPanel(), "West");
         southPanel.add(statusText, "Center");
         southPanel.add(center(buidLoginPanel()), "East");
         southPanel.setPreferredSize(new Dimension(100, 100));
-
+        
         panel.add(southPanel, "South");
-
+        
         launchButton.addActionListener(new ClassesUtils.LaunchActionListener(
                 launcherFrame));
         userName.addActionListener(new ClassesUtils.LaunchActionListener(
@@ -109,63 +112,64 @@ public class LoginForm extends JPanel
                 .addActionListener(new ClassesUtils.PlayOfflineActionListener(
                         launcherFrame));
         optionsButton.addActionListener(new ActionListener() {
-
+            
             public void actionPerformed(ActionEvent paramActionEvent)
             {
                 new OptionsPanel(launcherFrame).setVisible(true);
             }
         });
-
+        
         return panel;
     }
-
+    
     private JPanel buidLoginPanel()
     {
-        TransparentPanel panel = new TransparentPanel();
-        BorderLayout layout = new BorderLayout();
+        final TransparentPanel panel = new TransparentPanel();
+        final BorderLayout layout = new BorderLayout();
         layout.setHgap(0);
         layout.setVgap(8);
         panel.setLayout(layout);
-        GridLayout gl1 = new GridLayout(0, 1);
+        final GridLayout gl1 = new GridLayout(0, 1);
         gl1.setVgap(2);
-        GridLayout gl2 = new GridLayout(0, 1);
+        final GridLayout gl2 = new GridLayout(0, 1);
         gl2.setVgap(2);
-        GridLayout gl3 = new GridLayout(0, 1);
+        final GridLayout gl3 = new GridLayout(0, 1);
         gl3.setVgap(2);
-
-        TransparentPanel titles = new TransparentPanel(gl1);
-        TransparentPanel values = new TransparentPanel(gl2);
-
+        
+        final TransparentPanel titles = new TransparentPanel(gl1);
+        final TransparentPanel values = new TransparentPanel(gl2);
+        
         titles.add(new TransparentLabel(launcherFrame.locale
                 .getString("login.userLabel") + ":", 4));
         titles.add(new TransparentLabel(launcherFrame.locale
                 .getString("login.passwordLabel") + ":", 4));
         titles.add(new TransparentLabel("", 4));
-
+        
         values.add(userName);
         values.add(password);
         values.add(rememberBox);
-
+        
         panel.add(titles, "West");
         panel.add(values, "Center");
-
-        TransparentPanel loginPanel = new TransparentPanel(new BorderLayout());
-
-        TransparentPanel third = new TransparentPanel(gl3);
+        
+        final TransparentPanel loginPanel = new TransparentPanel(
+                new BorderLayout());
+        
+        final TransparentPanel third = new TransparentPanel(gl3);
         third.add(optionsButton);
         third.add(launchButton);
         third.add(new TransparentPanel());
-
+        
         third.setInsets(0, 10, 0, 10);
         titles.setInsets(0, 0, 0, 4);
-
+        
         loginPanel.add(third, "Center");
-
+        
         panel.add(loginPanel, "East");
-
+        
         return panel;
     }
-
+    
     private JScrollPane getUpdateNews()
     {
         if (scrollPane != null)
@@ -181,7 +185,7 @@ public class LoginForm extends JPanel
                                     .getString("launcher.loadBrowser")
                             + "</center></font></body></html>");
             editorPane.addHyperlinkListener(new HyperlinkListener() {
-
+                
                 public void hyperlinkUpdate(HyperlinkEvent he)
                 {
                     if (he.getEventType() == EventType.ACTIVATED)
@@ -190,14 +194,14 @@ public class LoginForm extends JPanel
                         {
                             editorPane.setPage(he.getURL());
                         }
-                        catch (IOException e)
+                        catch (final IOException e)
                         {
                             e.printStackTrace();
                         }
                     }
                 }
             });
-
+            
             new ClassesUtils.BrowserThread(editorPane,
                     launcherFrame.config.getString("launcher.browserHomeURL"))
                     .start();
@@ -206,17 +210,17 @@ public class LoginForm extends JPanel
             scrollPane = new JScrollPane(editorPane);
             scrollPane.setBorder(null);
             editorPane.setMargin(null);
-
+            
             scrollPane.setBorder(new MatteBorder(0, 0, 2, 0, Color.BLACK));
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
             e.printStackTrace();
         }
-
+        
         return scrollPane;
     }
-
+    
     public void askOfflineMode()
     {
         southPanel.removeAll();
@@ -227,7 +231,7 @@ public class LoginForm extends JPanel
         southPanel.setPreferredSize(new Dimension(100, 100));
         southPanel.validate();
     }
-
+    
     public void loginMode()
     {
         southPanel.removeAll();
@@ -238,69 +242,70 @@ public class LoginForm extends JPanel
         southPanel.setPreferredSize(new Dimension(100, 100));
         southPanel.validate();
     }
-
+    
     private JPanel buidOfflineLoginPanel()
     {
-        TransparentPanel panel = new TransparentPanel();
-        BorderLayout layout = new BorderLayout();
+        final TransparentPanel panel = new TransparentPanel();
+        final BorderLayout layout = new BorderLayout();
         layout.setHgap(0);
         layout.setVgap(8);
         panel.setLayout(layout);
-        GridLayout gl1 = new GridLayout(0, 1);
+        final GridLayout gl1 = new GridLayout(0, 1);
         gl1.setVgap(2);
-        GridLayout gl2 = new GridLayout(0, 1);
+        final GridLayout gl2 = new GridLayout(0, 1);
         gl2.setVgap(2);
-        GridLayout gl3 = new GridLayout(0, 1);
+        final GridLayout gl3 = new GridLayout(0, 1);
         gl3.setVgap(2);
-
-        TransparentPanel titles = new TransparentPanel(gl1);
-        TransparentPanel values = new TransparentPanel(gl2);
-
+        
+        final TransparentPanel titles = new TransparentPanel(gl1);
+        final TransparentPanel values = new TransparentPanel(gl2);
+        
         titles.add(new TransparentLabel(launcherFrame.locale
                 .getString("login.userLabel") + ":", 4));
         titles.add(new TransparentLabel(launcherFrame.locale
                 .getString("login.passwordLabel") + ":", 4));
         titles.add(new TransparentLabel("", 4));
-
+        
         values.add(userName);
         values.add(password);
         values.add(rememberBox);
-
+        
         panel.add(titles, "West");
         panel.add(values, "Center");
-
-        TransparentPanel loginPanel = new TransparentPanel(new BorderLayout());
-
-        TransparentPanel third = new TransparentPanel(gl3);
+        
+        final TransparentPanel loginPanel = new TransparentPanel(
+                new BorderLayout());
+        
+        final TransparentPanel third = new TransparentPanel(gl3);
         third.add(offlineButton);
         third.add(retryButton);
         third.add(new TransparentPanel());
-
+        
         third.setInsets(0, 10, 0, 10);
         titles.setInsets(0, 0, 0, 4);
-
+        
         loginPanel.add(third, "Center");
-
+        
         panel.add(loginPanel, "East");
-
+        
         return panel;
     }
-
+    
     public void loginOk()
     {
         writeUsername();
     }
-
+    
     private void readUsername()
     {
         try
         {
-            File lastLogin = new File(Utils.getWorkingDirectory(launcherFrame),
-                    "lastlogin");
-
+            final File lastLogin = new File(
+                    Utils.getWorkingDirectory(launcherFrame), "lastlogin");
+            
             if (lastLogin.exists())
             {
-                Cipher cipher = getCipher(Cipher.DECRYPT_MODE,
+                final Cipher cipher = getCipher(Cipher.DECRYPT_MODE,
                         launcherFrame.config
                                 .getString("updater.loginFileEncryptionKey"));
                 DataInputStream dis;
@@ -319,20 +324,20 @@ public class LoginForm extends JPanel
                 dis.close();
             }
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
             e.printStackTrace();
         }
     }
-
+    
     private void writeUsername()
     {
         try
         {
-            File lastLogin = new File(Utils.getWorkingDirectory(launcherFrame),
-                    "lastlogin");
-
-            Cipher cipher = getCipher(Cipher.ENCRYPT_MODE,
+            final File lastLogin = new File(
+                    Utils.getWorkingDirectory(launcherFrame), "lastlogin");
+            
+            final Cipher cipher = getCipher(Cipher.ENCRYPT_MODE,
                     launcherFrame.config
                             .getString("updater.loginFileEncryptionKey"));
             DataOutputStream dos;
@@ -350,45 +355,46 @@ public class LoginForm extends JPanel
                     .getPassword()) : "");
             dos.close();
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
             e.printStackTrace();
         }
     }
-
+    
     private Cipher getCipher(int mode, String password) throws Exception
     {
-        Random random = new Random(43287234L);
-        byte[] salt = new byte[8];
+        final Random random = new Random(43287234L);
+        final byte[] salt = new byte[8];
         random.nextBytes(salt);
-        PBEParameterSpec pbeParamSpec = new PBEParameterSpec(salt, 5);
-
-        SecretKey pbeKey = SecretKeyFactory.getInstance("PBEWithMD5AndDES")
-                .generateSecret(new PBEKeySpec(password.toCharArray()));
-        Cipher cipher = Cipher.getInstance("PBEWithMD5AndDES");
+        final PBEParameterSpec pbeParamSpec = new PBEParameterSpec(salt, 5);
+        
+        final SecretKey pbeKey = SecretKeyFactory.getInstance(
+                "PBEWithMD5AndDES").generateSecret(
+                new PBEKeySpec(password.toCharArray()));
+        final Cipher cipher = Cipher.getInstance("PBEWithMD5AndDES");
         cipher.init(mode, pbeKey, pbeParamSpec);
         return cipher;
     }
-
+    
     private Component center(Component c)
     {
-        TransparentPanel tp = new TransparentPanel(new GridBagLayout());
+        final TransparentPanel tp = new TransparentPanel(new GridBagLayout());
         tp.add(c);
         return tp;
     }
-
+    
     public String getUserName()
     {
-        String user = ((userName.getText() != null) && (userName.getText() != "")) ? userName
-                .getText() : null;
+        final String user = userName.getText() != null
+                && userName.getText() != "" ? userName.getText() : null;
         return user;
     }
-
+    
     public char[] getPassword()
     {
         return password.getPassword();
     }
-
+    
     public void setStatusText(String message)
     {
         statusText.setText(message);

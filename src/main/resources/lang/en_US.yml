@@ -36,6 +36,6 @@ updater:
     START_REAL_APPLET: "Starting real applet"
     DONE: "Done loading"
 global:
-  yes: "Yes"
-  no: "No"
+  yesStr: "Yes"
+  noStr: "No"
   cancel: "Cancel"

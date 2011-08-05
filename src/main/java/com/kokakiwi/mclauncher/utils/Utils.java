@@ -21,28 +21,28 @@ public class Utils
 {
     public static File      workDir = null;
     public static JavaUtils JavaUtils;
-
+    
     public static InputStream getResourceAsStream(String url)
     {
         return LauncherFrame.class.getResourceAsStream("/" + url);
     }
-
+    
     public static File getWorkingDirectory(LauncherFrame launcherFrame)
     {
         return getWorkingDirectory(
                 launcherFrame.config.getString("updater.folderName"),
-                (launcherFrame.config.getBoolean("updater.customGameDir") ? launcherFrame.config
-                        .getString("updater.gameDir") : null));
+                launcherFrame.config.getBoolean("updater.customGameDir") ? launcherFrame.config
+                        .getString("updater.gameDir") : null);
     }
-
+    
     public static File getWorkingDirectory(String applicationName, String local)
     {
         if (workDir != null)
         {
             return workDir;
         }
-
-        String userHome = System.getProperty("user.home", ".");
+        
+        final String userHome = System.getProperty("user.home", ".");
         File workingDirectory;
         switch (Utils.OS.values()[getPlatform().ordinal()])
         {
@@ -52,7 +52,7 @@ public class Utils
                         '.' + applicationName + '/');
                 break;
             case windows:
-                String applicationData = System.getenv("APPDATA");
+                final String applicationData = System.getenv("APPDATA");
                 if (applicationData != null)
                 {
                     workingDirectory = new File(applicationData, "."
@@ -71,33 +71,41 @@ public class Utils
             default:
                 workingDirectory = new File(userHome, applicationName + '/');
         }
-
+        
         if (local != null)
         {
             workingDirectory = new File(
                     new File(local + "/").getAbsoluteFile(), "."
                             + applicationName + "/");
         }
-
-        if ((!workingDirectory.exists()) && (!workingDirectory.mkdirs()))
+        
+        if (!workingDirectory.exists() && !workingDirectory.mkdirs())
         {
             throw new RuntimeException(
                     "The working directory could not be created: "
                             + workingDirectory);
         }
         workDir = workingDirectory;
-
+        
         return workDir;
     }
-
+    
+    public static DownloadThread download(URL url, File target)
+            throws Exception
+    {
+        final DownloadThread thread = DownloadThread.newInstance(url, target);
+        
+        return thread;
+    }
+    
     public static String executePost(String targetURL, String urlParameters,
             String keyFileName)
     {
-        String protocol = targetURL.substring(4);
+        final String protocol = targetURL.substring(4);
         HttpURLConnection connection = null;
         try
         {
-            URL url = new URL(targetURL);
+            final URL url = new URL(targetURL);
             if (protocol.contains("https"))
             {
                 connection = (HttpsURLConnection) url.openConnection();
@@ -109,32 +117,32 @@ public class Utils
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type",
                     "application/x-www-form-urlencoded");
-
+            
             connection.setRequestProperty("Content-Length",
                     Integer.toString(urlParameters.getBytes().length));
             connection.setRequestProperty("Content-Language", "en-US");
-
+            
             connection.setUseCaches(false);
             connection.setDoInput(true);
             connection.setDoOutput(true);
-
+            
             connection.connect();
-
+            
             if (protocol.contains("https"))
             {
-                Certificate[] certs = ((HttpsURLConnection) connection)
+                final Certificate[] certs = ((HttpsURLConnection) connection)
                         .getServerCertificates();
-
-                byte[] bytes = new byte[294];
-                DataInputStream dis = new DataInputStream(
+                
+                final byte[] bytes = new byte[294];
+                final DataInputStream dis = new DataInputStream(
                         getResourceAsStream("keys/" + keyFileName));
                 dis.readFully(bytes);
                 dis.close();
-
-                Certificate c = certs[0];
-                PublicKey pk = c.getPublicKey();
-                byte[] data = pk.getEncoded();
-
+                
+                final Certificate c = certs[0];
+                final PublicKey pk = c.getPublicKey();
+                final byte[] data = pk.getEncoded();
+                
                 for (int i = 0; i < data.length; i++)
                 {
                     if (data[i] == bytes[i])
@@ -144,28 +152,29 @@ public class Utils
                     throw new RuntimeException("Public key mismatch");
                 }
             }
-
-            DataOutputStream wr = new DataOutputStream(
+            
+            final DataOutputStream wr = new DataOutputStream(
                     connection.getOutputStream());
             wr.writeBytes(urlParameters);
             wr.flush();
             wr.close();
-
-            InputStream is = connection.getInputStream();
-            BufferedReader rd = new BufferedReader(new InputStreamReader(is));
-
-            StringBuffer response = new StringBuffer();
+            
+            final InputStream is = connection.getInputStream();
+            final BufferedReader rd = new BufferedReader(new InputStreamReader(
+                    is));
+            
+            final StringBuffer response = new StringBuffer();
             String line;
             while ((line = rd.readLine()) != null)
             {
                 response.append(line);
             }
             rd.close();
-
-            String str1 = response.toString();
+            
+            final String str1 = response.toString();
             return str1;
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
             e.printStackTrace();
             return null;
@@ -178,26 +187,26 @@ public class Utils
             }
         }
     }
-
+    
     public static void openLink(URI uri)
     {
         try
         {
-            Object o = Class.forName("java.awt.Desktop")
+            final Object o = Class.forName("java.awt.Desktop")
                     .getMethod("getDesktop", new Class[0])
                     .invoke(null, new Object[0]);
             o.getClass().getMethod("browse", new Class[] { URI.class })
                     .invoke(o, new Object[] { uri });
         }
-        catch (Throwable e)
+        catch (final Throwable e)
         {
             System.out.println("Failed to open link " + uri.toString());
         }
     }
-
+    
     public static OS getPlatform()
     {
-        String osName = System.getProperty("os.name").toLowerCase();
+        final String osName = System.getProperty("os.name").toLowerCase();
         if (osName.contains("win"))
         {
             return OS.windows;
@@ -224,7 +233,7 @@ public class Utils
         }
         return OS.unknown;
     }
-
+    
     public static enum OS
     {
         linux, solaris, windows, macos, unknown;

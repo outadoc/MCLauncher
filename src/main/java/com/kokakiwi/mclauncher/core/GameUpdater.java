@@ -8,13 +8,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
-import java.math.BigInteger;
-import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
-import java.security.AccessController;
-import java.security.MessageDigest;
-import java.security.PrivilegedExceptionAction;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
@@ -22,95 +16,95 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Pack200;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import com.kokakiwi.mclauncher.LauncherFrame;
-import com.kokakiwi.mclauncher.utils.ClassesUtils;
+import com.kokakiwi.mclauncher.utils.DownloadThread;
 import com.kokakiwi.mclauncher.utils.State;
 import com.kokakiwi.mclauncher.utils.Utils;
+import com.kokakiwi.mclauncher.utils.Utils.OS;
 
 public class GameUpdater implements Runnable
 {
     private final LauncherFrame launcherFrame;
     private final Launcher      launcher;
-
+    
     private boolean             lzmaSupported;
     private boolean             pack200Supported;
-    public URL[]                urlList;
     public boolean              fatalError   = false;
     public String               fatalErrorDescription;
     public boolean              shouldUpdate = false;
-    private int                 totalSizeDownload;
-    private int                 currentSizeDownload;
-    private int                 totalSizeExtract;
-    private int                 currentSizeExtract;
-
+    
+    private URL[]               jarUrls;
+    private URL[]               additionalsUrls;
+    private URL                 nativeUrl;
+    
     public GameUpdater(LauncherFrame launcherFrame)
     {
         this.launcherFrame = launcherFrame;
         launcher = launcherFrame.launcher;
     }
-
+    
     public void run()
     {
         init();
-        launcher.setPercentage(5);
-
+        setPercentage(5);
+        
         try
         {
-            loadJarURLs();
-
-            String path = (String) AccessController
-                    .doPrivileged(new PrivilegedExceptionAction<Object>() {
-                        public Object run() throws Exception
-                        {
-                            return Utils.getWorkingDirectory(launcherFrame)
-                                    + File.separator + "bin" + File.separator;
-                        }
-                    });
-
-            File dir = new File(path);
-
+            loadJarUrls();
+            loadAdditionalsUrls();
+            loadNativeUrl();
+            
+            final String path = Utils.getWorkingDirectory(launcherFrame)
+                    + File.separator + "bin" + File.separatorChar;
+            final File dir = new File(path);
+            
             if (!dir.exists())
             {
                 dir.mkdirs();
             }
-
-            String latestVersion = launcherFrame.config
+            
+            final String latestVersion = launcherFrame.config
                     .getString("latestVersion");
-
+            
             if (latestVersion != null)
             {
-                boolean forceUpdate = launcherFrame.config
+                final boolean forceUpdate = launcherFrame.config
                         .getString("force-update") == null ? false : true;
-                File versionFile = new File(dir, "version");
-
+                final File versionFile = new File(dir, "version");
+                
                 boolean cacheAvailable = false;
-                if ((!forceUpdate)
-                        && (versionFile.exists())
-                        && ((latestVersion.equals("-1")) || (latestVersion
-                                .equals(readVersionFile(versionFile)))))
+                if (!forceUpdate
+                        && versionFile.exists()
+                        && (latestVersion.equals("-1") || latestVersion
+                                .equals(readVersionFile(versionFile))))
                 {
                     cacheAvailable = true;
                     launcher.setPercentage(90);
                 }
-
-                if ((forceUpdate) || (!cacheAvailable))
+                
+                if (forceUpdate || !cacheAvailable)
                 {
                     shouldUpdate = true;
-                    if ((!forceUpdate) && (versionFile.exists()))
+                    if (!forceUpdate && versionFile.exists())
                     {
                         checkShouldUpdate();
                     }
                     if (shouldUpdate || forceUpdate)
                     {
                         writeVersionFile(versionFile, "");
-
-                        downloadJars(path);
+                        
+                        downloadFiles(path);
                         extractJars(path);
-                        extractNatives(path);
-
-                        if ((latestVersion != null)
-                                && !((latestVersion.equals("-1"))))
+                        extractAdditionals(Utils.getWorkingDirectory(
+                                launcherFrame).getAbsolutePath()
+                                + File.separatorChar);
+                        extractNative(path);
+                        
+                        if (latestVersion != null
+                                && !latestVersion.equals("-1"))
                         {
                             launcher.setPercentage(90);
                             writeVersionFile(versionFile, latestVersion);
@@ -124,30 +118,48 @@ public class GameUpdater implements Runnable
                 }
             }
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
             e.printStackTrace();
         }
-
-        launcher.setPercentage(90);
+        
+        setPercentage(90);
     }
-
-    protected void loadJarURLs() throws Exception
+    
+    private void loadJarUrls() throws Exception
     {
         launcher.setState(State.DETERMINING_PACKAGE);
-        List<String> jarList = launcherFrame.config
+        final List<String> jarList = launcherFrame.config
                 .getStringList("updater.jarList");
-        urlList = new URL[jarList.size() + 1];
-
+        jarUrls = new URL[jarList.size()];
+        
         for (int i = 0; i < jarList.size(); i++)
         {
-            urlList[i] = new URL(jarList.get(i));
+            jarUrls[i] = new URL(jarList.get(i));
         }
-
-        Utils.OS osName = Utils.getPlatform();
+    }
+    
+    private void loadAdditionalsUrls() throws Exception
+    {
+        final List<String> addList = launcherFrame.config
+                .getStringList("updater.additionalsFiles");
+        additionalsUrls = new URL[addList.size()];
+        
+        for (int i = 0; i < addList.size(); i++)
+        {
+            if (addList.get(i) != null)
+            {
+                additionalsUrls[i] = new URL(addList.get(i));
+            }
+        }
+    }
+    
+    private void loadNativeUrl() throws Exception
+    {
+        final Utils.OS osName = Utils.getPlatform();
         String nativeJar = null;
-
-        if (osName == Utils.OS.unknown)
+        
+        if (osName == OS.unknown)
         {
             fatalErrorOccured("OS (" + System.getProperty("os.name")
                     + ") not supported");
@@ -157,7 +169,7 @@ public class GameUpdater implements Runnable
             nativeJar = launcherFrame.config.getString("updater.nativesList."
                     + osName.name());
         }
-
+        
         if (nativeJar == null)
         {
             fatalErrorOccured("no lwjgl natives files found");
@@ -165,10 +177,209 @@ public class GameUpdater implements Runnable
         else
         {
             nativeJar = trimExtensionByCapabilities(nativeJar);
-            urlList[jarList.size()] = new URL(nativeJar);
+            nativeUrl = new URL(nativeJar);
         }
     }
-
+    
+    private void downloadFiles(String path) throws Exception
+    {
+        final File versionFile = new File(path, "md5s");
+        final Properties md5s = new Properties();
+        if (versionFile.exists())
+        {
+            try
+            {
+                final FileInputStream fis = new FileInputStream(versionFile);
+                md5s.load(fis);
+                fis.close();
+            }
+            catch (final Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+        launcher.setState(State.DOWNLOADING);
+        
+        final int downloadNum = jarUrls.length + additionalsUrls.length + 1;
+        final URL[] urls = new URL[downloadNum];
+        int pointer;
+        for (pointer = 0; pointer < jarUrls.length; pointer++)
+        {
+            urls[pointer] = jarUrls[pointer];
+        }
+        for (int i = 0; i < additionalsUrls.length; i++)
+        {
+            urls[i + pointer] = additionalsUrls[i];
+        }
+        urls[downloadNum - 1] = nativeUrl;
+        
+        final DownloadThread[] threads = new DownloadThread[downloadNum];
+        
+        int totalFilesSize = 0;
+        int totalDownloadedSize = 0;
+        for (int i = 0; i < downloadNum; i++)
+        {
+            if (urls[i] != null)
+            {
+                final String fileName = getFileName(urls[i]);
+                final File target = new File(path, fileName);
+                final DownloadThread thread = new DownloadThread(urls[i],
+                        target);
+                thread.initConnection();
+                totalFilesSize += thread.getFileSize();
+                
+                threads[i] = thread;
+            }
+        }
+        
+        for (final DownloadThread thread : threads)
+        {
+            if (thread != null)
+            {
+                thread.start();
+                while (!thread.isDownloaded())
+                {
+                    if (thread.getFileSize() > 0)
+                    {
+                        String subTaskMessage = launcherFrame.locale
+                                .getString("updater.retrieving")
+                                + ": "
+                                + thread.getFileName()
+                                + " "
+                                + thread.getDownloadedSize()
+                                * 100
+                                / thread.getFileSize() + "%";
+                        if (thread.getDownloadSpeed() > 0)
+                        {
+                            subTaskMessage += " @ " + thread.getDownloadSpeed()
+                                    + " Kb/sec";
+                        }
+                        launcher.subtaskMessage = subTaskMessage;
+                        
+                        final int percent = 10
+                                + (totalDownloadedSize + thread
+                                        .getDownloadedSize()) * 45
+                                / totalFilesSize;
+                        setPercentage(percent);
+                    }
+                }
+                
+                totalDownloadedSize += thread.getFileSize();
+            }
+        }
+        
+        launcher.subtaskMessage = "";
+    }
+    
+    private void extractJars(String path) throws Exception
+    {
+        launcher.setState(State.EXTRACTING_PACKAGES);
+        
+        for (final URL url : jarUrls)
+        {
+            final String fileName = getFileName(url);
+            final File file = new File(path + fileName);
+            extract(file, path, "jar");
+        }
+    }
+    
+    private void extractAdditionals(String path) throws Exception
+    {
+        for (final URL url : additionalsUrls)
+        {
+            if (url != null)
+            {
+                final String fileName = getFileName(url);
+                final File file = new File(
+                        Utils.getWorkingDirectory(launcherFrame)
+                                + File.separator + "bin" + File.separatorChar
+                                + fileName);
+                extract(file, path);
+            }
+        }
+    }
+    
+    private void extractNative(String path) throws Exception
+    {
+        final String fileName = getFileName(nativeUrl);
+        final File file = new File(path + fileName);
+        extract(file, path + "natives" + File.separatorChar);
+    }
+    
+    private void extract(File file, String path) throws Exception
+    {
+        extract(file, path, "");
+    }
+    
+    private void extract(File file, String path, String excludes)
+            throws Exception
+    {
+        final File dir = new File(path);
+        if (!dir.exists())
+        {
+            dir.mkdirs();
+        }
+        
+        File tmpFile = file;
+        
+        final String fileName = getFileName(file.toURI().toURL());
+        final String extPart = fileName.substring(fileName.indexOf('.') + 1);
+        
+        String[] exts = new String[0];
+        if (extPart.contains("."))
+        {
+            exts = fileName.substring(fileName.indexOf('.') - 1).split(".");
+        }
+        else
+        {
+            exts = new String[1];
+            exts[0] = extPart;
+        }
+        
+        for (int i = exts.length - 1; i >= 0; i--)
+        {
+            final String ext = exts[i];
+            if (ext.equalsIgnoreCase("pack") && !excludes.contains("pack"))
+            {
+                extractPack(tmpFile.getAbsolutePath(), tmpFile
+                        .getAbsolutePath().replace(".pack", ""));
+                tmpFile = new File(tmpFile.getAbsolutePath().replace(".pack",
+                        ""));
+            }
+            else if (ext.equalsIgnoreCase("lzma") && !excludes.contains("lzma"))
+            {
+                extractLZMA(tmpFile.getAbsolutePath(), tmpFile
+                        .getAbsolutePath().replace(".pack", ""));
+                tmpFile = new File(tmpFile.getAbsolutePath().replace(".lzma",
+                        ""));
+            }
+            else if (ext.equalsIgnoreCase("jar") && !excludes.contains("jar"))
+            {
+                extractJar(tmpFile, path);
+                i = -1;
+            }
+            else if (ext.equalsIgnoreCase("zip") && !excludes.contains("zip"))
+            {
+                extractZip(tmpFile, path);
+                i = -1;
+            }
+            
+        }
+    }
+    
+    public URL[] getJarURLs()
+    {
+        final int downloadNum = jarUrls.length;
+        final URL[] urls = new URL[downloadNum];
+        int pointer;
+        for (pointer = 0; pointer < jarUrls.length; pointer++)
+        {
+            urls[pointer] = jarUrls[pointer];
+        }
+        
+        return urls;
+    }
+    
     private void checkShouldUpdate()
     {
         launcher.pauseAskUpdate = true;
@@ -178,378 +389,258 @@ public class GameUpdater implements Runnable
             {
                 Thread.sleep(1000L);
             }
-            catch (InterruptedException e)
+            catch (final InterruptedException e)
             {
                 e.printStackTrace();
             }
         }
     }
-
-    protected void downloadJars(String path) throws Exception
+    
+    private void setPercentage(int percent)
     {
-        File versionFile = new File(path, "md5s");
-        Properties md5s = new Properties();
-        boolean forceUpdate = launcherFrame.config.getString("force-update") == null ? false
-                : true;
-        if (versionFile.exists())
-        {
-            try
-            {
-                FileInputStream fis = new FileInputStream(versionFile);
-                md5s.load(fis);
-                fis.close();
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-            }
-        }
-        launcher.setState(State.DOWNLOADING);
-
-        int[] fileSizes = new int[urlList.length];
-        boolean[] skip = new boolean[urlList.length];
-
-        for (int i = 0; i < urlList.length; i++)
-        {
-            URLConnection urlconnection = urlList[i].openConnection();
-            urlconnection.setDefaultUseCaches(false);
-            skip[i] = false;
-            if ((urlconnection instanceof HttpURLConnection))
-            {
-                ((HttpURLConnection) urlconnection).setRequestMethod("HEAD");
-
-                String etagOnDisk = "\""
-                        + md5s.getProperty(getFileName(urlList[i])) + "\"";
-
-                if ((!forceUpdate) && (etagOnDisk != null))
-                {
-                    urlconnection.setRequestProperty("If-None-Match",
-                            etagOnDisk);
-                }
-
-                int code = ((HttpURLConnection) urlconnection)
-                        .getResponseCode();
-                if ((code / 100) == 3)
-                {
-                    skip[i] = true;
-                }
-            }
-            fileSizes[i] = urlconnection.getContentLength();
-            totalSizeDownload += fileSizes[i];
-        }
-
-        int initialPercentage = 10;
-        launcher.setPercentage(initialPercentage);
-
-        byte[] buffer = new byte[65536];
-        for (int i = 0; i < urlList.length; i++)
-        {
-            if (skip[i])
-            {
-                launcher.setPercentage(initialPercentage
-                        + ((fileSizes[i] * 45) / totalSizeDownload));
-            }
-            else
-            {
-                try
-                {
-                    md5s.remove(getFileName(urlList[i]));
-                    md5s.store(new FileOutputStream(versionFile),
-                            "md5 hashes for downloaded files");
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
-
-                int unsuccessfulAttempts = 0;
-                int maxUnsuccessfulAttempts = 3;
-                boolean downloadFile = true;
-
-                while (downloadFile)
-                {
-                    downloadFile = false;
-
-                    URLConnection urlconnection = urlList[i].openConnection();
-
-                    String etag = "";
-
-                    if ((urlconnection instanceof HttpURLConnection))
-                    {
-                        urlconnection.setRequestProperty("Cache-Control",
-                                "no-cache");
-
-                        urlconnection.connect();
-
-                        etag = urlconnection.getHeaderField("ETag");
-                        if (etag != null)
-                        {
-                            etag = etag.substring(1, etag.length() - 1);
-                        }
-                    }
-
-                    String currentFile = getFileName(urlList[i]);
-                    InputStream inputstream = getJarInputStream(currentFile,
-                            urlconnection);
-                    FileOutputStream fos = new FileOutputStream(path
-                            + currentFile);
-
-                    long downloadStartTime = System.currentTimeMillis();
-                    int downloadedAmount = 0;
-                    int fileSize = 0;
-                    String downloadSpeedMessage = "";
-
-                    MessageDigest m = MessageDigest.getInstance("MD5");
-                    int bufferSize;
-                    while ((bufferSize = inputstream.read(buffer, 0,
-                            buffer.length)) != -1)
-                    {
-                        fos.write(buffer, 0, bufferSize);
-                        m.update(buffer, 0, bufferSize);
-                        currentSizeDownload += bufferSize;
-                        fileSize += bufferSize;
-                        launcher.setPercentage(initialPercentage
-                                + ((currentSizeDownload * 45) / totalSizeDownload));
-                        launcher.subtaskMessage = (launcherFrame.locale
-                                .getString("updater.retrieving")
-                                + ": "
-                                + currentFile
-                                + " "
-                                + ((currentSizeDownload * 100) / totalSizeDownload) + "%");
-
-                        downloadedAmount += bufferSize;
-                        long timeLapse = System.currentTimeMillis()
-                                - downloadStartTime;
-
-                        if (timeLapse >= 1000L)
-                        {
-                            float downloadSpeed = downloadedAmount
-                                    / (float) timeLapse;
-                            downloadSpeed = (int) (downloadSpeed * 100.0F) / 100.0F;
-                            downloadSpeedMessage = " @ " + downloadSpeed
-                                    + " KB/sec";
-                            downloadedAmount = 0;
-                            downloadStartTime += 1000L;
-                        }
-
-                        launcher.subtaskMessage += downloadSpeedMessage;
-                    }
-
-                    inputstream.close();
-                    fos.close();
-                    String md5 = new BigInteger(1, m.digest()).toString(16);
-                    while (md5.length() < 32)
-                    {
-                        md5 = "0" + md5;
-                    }
-                    boolean md5Matches = true;
-                    if (etag != null)
-                    {
-                        md5Matches = md5.equals(etag);
-                    }
-
-                    if ((urlconnection instanceof HttpURLConnection))
-                    {
-                        if ((md5Matches)
-                                && ((fileSize == fileSizes[i]) || (fileSizes[i] <= 0)))
-                        {
-                            try
-                            {
-                                md5s.setProperty(getFileName(urlList[i]),
-                                        etag != null ? etag : "");
-                                md5s.store(new FileOutputStream(versionFile),
-                                        "md5 hashes for downloaded files");
-                            }
-                            catch (Exception e)
-                            {
-                                e.printStackTrace();
-                            }
-                        }
-                        else
-                        {
-                            unsuccessfulAttempts++;
-                            if (unsuccessfulAttempts < maxUnsuccessfulAttempts)
-                            {
-                                downloadFile = true;
-                                currentSizeDownload -= fileSize;
-                            }
-                            else
-                            {
-                                throw new Exception("failed to download "
-                                        + currentFile);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        launcher.subtaskMessage = "";
+        launcher.setPercentage(percent);
     }
-
-    protected void extractJars(String path) throws Exception
+    
+    private void fatalErrorOccured(String error)
     {
-        launcher.setState(State.EXTRACTING_PACKAGES);
-
-        float increment = 10.0F / urlList.length;
-
-        for (int i = 0; i < urlList.length; i++)
-        {
-            launcher.setPercentage(55 + (int) (increment * (i + 1)));
-            String filename = getFileName(urlList[i]);
-
-            if (filename.endsWith(".pack.lzma"))
-            {
-                launcher.subtaskMessage = (launcherFrame.locale
-                        .getString("updater.extracting")
-                        + ": "
-                        + filename
-                        + " "
-                        + launcherFrame.locale.getString("updater.extractTo")
-                        + " " + filename.replaceAll(".lzma", ""));
-                extractLZMA(path + filename,
-                        path + filename.replaceAll(".lzma", ""));
-
-                launcher.subtaskMessage = (launcherFrame.locale
-                        .getString("updater.extracting")
-                        + ": "
-                        + filename.replaceAll(".lzma", "")
-                        + " "
-                        + launcherFrame.locale.getString("updater.extractTo")
-                        + " " + filename.replaceAll(".pack.lzma", ""));
-                extractPack(path + filename.replaceAll(".lzma", ""), path
-                        + filename.replaceAll(".pack.lzma", ""));
-            }
-            else if (filename.endsWith(".pack"))
-            {
-                launcher.subtaskMessage = (launcherFrame.locale
-                        .getString("updater.extracting")
-                        + ": "
-                        + filename
-                        + " "
-                        + launcherFrame.locale.getString("updater.extractTo")
-                        + " " + filename.replace(".pack", ""));
-                extractPack(path + filename,
-                        path + filename.replace(".pack", ""));
-            }
-            else if (filename.endsWith(".lzma"))
-            {
-                launcher.subtaskMessage = (launcherFrame.locale
-                        .getString("updater.extracting")
-                        + ": "
-                        + filename
-                        + " "
-                        + launcherFrame.locale.getString("updater.extractTo")
-                        + " " + filename.replace(".lzma", ""));
-                extractLZMA(path + filename,
-                        path + filename.replace(".lzma", ""));
-            }
-        }
+        fatalError = true;
+        fatalErrorDescription = "Fatal error occured (" + launcher.getState()
+                + "): " + error;
     }
-
-    protected void extractNatives(String path) throws Exception
-    {
-        launcher.setState(State.EXTRACTING_PACKAGES);
-
-        int initialPercentage = launcher.getPercentage();
-
-        String nativeJar = getJarName(urlList[(urlList.length - 1)]);
-        File nativeFolder = new File(path + "natives");
-        if (!nativeFolder.exists())
-        {
-            nativeFolder.mkdir();
-        }
-
-        File file = new File(path + nativeJar);
-        if (!file.exists())
-        {
-            return;
-        }
-        JarFile jarFile = new JarFile(file, true);
-        Enumeration<JarEntry> entities = jarFile.entries();
-
-        totalSizeExtract = 0;
-
-        while (entities.hasMoreElements())
-        {
-            JarEntry entry = entities.nextElement();
-
-            if ((entry.isDirectory()) || (entry.getName().indexOf('/') != -1))
-            {
-                continue;
-            }
-            totalSizeExtract = (int) (totalSizeExtract + entry.getSize());
-        }
-
-        currentSizeExtract = 0;
-
-        entities = jarFile.entries();
-
-        while (entities.hasMoreElements())
-        {
-            JarEntry entry = entities.nextElement();
-
-            if ((entry.isDirectory()) || (entry.getName().indexOf('/') != -1))
-            {
-                continue;
-            }
-            File f = new File(path + "natives" + File.separator
-                    + entry.getName());
-            if ((f.exists()) && (!f.delete()))
-            {
-                continue;
-            }
-
-            InputStream in = jarFile.getInputStream(jarFile.getEntry(entry
-                    .getName()));
-            OutputStream out = new FileOutputStream(path + "natives"
-                    + File.separator + entry.getName());
-
-            byte[] buffer = new byte[65536];
-            int bufferSize;
-            while ((bufferSize = in.read(buffer, 0, buffer.length)) != -1)
-            {
-                out.write(buffer, 0, bufferSize);
-                currentSizeExtract += bufferSize;
-
-                launcher.setPercentage(initialPercentage
-                        + ((currentSizeExtract * 20) / totalSizeExtract));
-                launcher.subtaskMessage = (launcherFrame.locale
-                        .getString("updater.extracting")
-                        + ": "
-                        + entry.getName()
-                        + " "
-                        + ((currentSizeExtract * 100) / totalSizeExtract) + "%");
-            }
-
-            in.close();
-            out.close();
-        }
-        launcher.subtaskMessage = "";
-
-        jarFile.close();
-
-        File f = new File(path + nativeJar);
-        f.delete();
-    }
-
-    protected String trimExtensionByCapabilities(String file)
+    
+    private String trimExtensionByCapabilities(String file)
     {
         if (!pack200Supported)
         {
             file = file.replaceAll(".pack", "");
         }
-
+        
         if (!lzmaSupported)
         {
             file = file.replaceAll(".lzma", "");
         }
         return file;
     }
-
-    protected String getJarName(URL url)
+    
+    private String readVersionFile(File file) throws Exception
+    {
+        final DataInputStream dis = new DataInputStream(new FileInputStream(
+                file));
+        final String version = dis.readUTF();
+        dis.close();
+        return version;
+    }
+    
+    private void writeVersionFile(File file, String version) throws Exception
+    {
+        final DataOutputStream dos = new DataOutputStream(new FileOutputStream(
+                file));
+        dos.writeUTF(version);
+        dos.close();
+    }
+    
+    private String getFileName(URL url)
     {
         String fileName = url.getFile();
+        if (fileName.contains("?"))
+        {
+            fileName = fileName.substring(0, fileName.indexOf("?"));
+        }
+        return fileName.substring(fileName.lastIndexOf('/') + 1);
+    }
+    
+    private void extractLZMA(String in, String out) throws Exception
+    {
+        final File f = new File(in);
+        if (!f.exists())
+        {
+            return;
+        }
+        final FileInputStream fileInputHandle = new FileInputStream(f);
+        
+        final Class<?> clazz = Class.forName("LZMA.LzmaInputStream");
+        final Constructor<?> constructor = clazz
+                .getDeclaredConstructor(new Class[] { InputStream.class });
+        
+        InputStream inputHandle = (InputStream) constructor
+                .newInstance(new Object[] { fileInputHandle });
+        
+        OutputStream outputHandle = new FileOutputStream(out);
+        
+        final byte[] buffer = new byte[16384];
+        
+        int ret = inputHandle.read(buffer);
+        while (ret >= 1)
+        {
+            outputHandle.write(buffer, 0, ret);
+            ret = inputHandle.read(buffer);
+        }
+        
+        inputHandle.close();
+        outputHandle.close();
+        
+        outputHandle = null;
+        inputHandle = null;
+        
+        f.delete();
+    }
+    
+    private void extractPack(String in, String out) throws Exception
+    {
+        final File f = new File(in);
+        if (!f.exists())
+        {
+            return;
+        }
+        
+        final FileOutputStream fostream = new FileOutputStream(out);
+        final JarOutputStream jostream = new JarOutputStream(fostream);
+        
+        final Pack200.Unpacker unpacker = Pack200.newUnpacker();
+        unpacker.unpack(f, jostream);
+        jostream.close();
+        
+        f.delete();
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void extractZip(File file, String path) throws Exception
+    {
+        final int initialPercentage = launcher.getPercentage();
+        
+        final ZipFile zipFile = new ZipFile(file);
+        Enumeration<ZipEntry> entries = (Enumeration<ZipEntry>) zipFile
+                .entries();
+        
+        int totalSizeExtract = 0;
+        while (entries.hasMoreElements())
+        {
+            final ZipEntry entry = entries.nextElement();
+            if (entry.isDirectory() || entry.getName().indexOf('/') != -1)
+            {
+                continue;
+            }
+            
+            totalSizeExtract += entry.getSize();
+        }
+        int currentSizeExtract = 0;
+        entries = (Enumeration<ZipEntry>) zipFile.entries();
+        
+        while (entries.hasMoreElements())
+        {
+            final ZipEntry entry = entries.nextElement();
+            if (entry.isDirectory() || entry.getName().indexOf('/') != -1)
+            {
+                continue;
+            }
+            
+            final File f = new File(path + entry.getName());
+            if (f.exists() && !f.delete())
+            {
+                continue;
+            }
+            
+            final InputStream in = zipFile.getInputStream(zipFile
+                    .getEntry(entry.getName()));
+            final OutputStream out = new FileOutputStream(new File(path
+                    + entry.getName()));
+            
+            final byte[] buffer = new byte[65536];
+            int bufferSize;
+            while ((bufferSize = in.read(buffer, 0, buffer.length)) != -1)
+            {
+                out.write(buffer, 0, bufferSize);
+                currentSizeExtract += bufferSize;
+                
+                launcher.setPercentage(initialPercentage + currentSizeExtract
+                        * 20 / totalSizeExtract);
+                launcher.subtaskMessage = launcherFrame.locale
+                        .getString("updater.extracting")
+                        + ": "
+                        + entry.getName()
+                        + " "
+                        + currentSizeExtract
+                        * 100
+                        / totalSizeExtract + "%";
+            }
+            
+            in.close();
+            out.close();
+        }
+        
+        launcher.subtaskMessage = "";
+        zipFile.close();
+    }
+    
+    private void extractJar(File file, String path) throws Exception
+    {
+        final int initialPercentage = launcher.getPercentage();
+        final JarFile jarFile = new JarFile(file);
+        Enumeration<JarEntry> entries = jarFile.entries();
+        
+        int totalSizeExtract = 0;
+        while (entries.hasMoreElements())
+        {
+            final JarEntry entry = entries.nextElement();
+            if (entry.isDirectory() || entry.getName().indexOf('/') != -1)
+            {
+                continue;
+            }
+            
+            totalSizeExtract += entry.getSize();
+        }
+        int currentSizeExtract = 0;
+        entries = jarFile.entries();
+        
+        while (entries.hasMoreElements())
+        {
+            final JarEntry entry = entries.nextElement();
+            if (entry.isDirectory() || entry.getName().indexOf('/') != -1)
+            {
+                continue;
+            }
+            
+            final File f = new File(path + entry.getName());
+            if (f.exists() && !f.delete())
+            {
+                continue;
+            }
+            
+            final InputStream in = jarFile.getInputStream(jarFile
+                    .getEntry(entry.getName()));
+            final OutputStream out = new FileOutputStream(new File(path
+                    + entry.getName()));
+            
+            final byte[] buffer = new byte[65536];
+            int bufferSize;
+            while ((bufferSize = in.read(buffer, 0, buffer.length)) != -1)
+            {
+                out.write(buffer, 0, bufferSize);
+                currentSizeExtract += bufferSize;
+                
+                launcher.setPercentage(initialPercentage + currentSizeExtract
+                        * 20 / totalSizeExtract);
+                launcher.subtaskMessage = launcherFrame.locale
+                        .getString("updater.extracting")
+                        + ": "
+                        + entry.getName()
+                        + " "
+                        + currentSizeExtract
+                        * 100
+                        / totalSizeExtract + "%";
+            }
+            
+            in.close();
+            out.close();
+        }
+        
+        launcher.subtaskMessage = "";
+        jarFile.close();
+    }
+    
+    public String getJarName(URL url)
+    {
+        String fileName = getFileName(url);
         if (fileName.contains("?"))
         {
             fileName = fileName.substring(0, fileName.indexOf("?"));
@@ -568,147 +659,15 @@ public class GameUpdater implements Runnable
         }
         return fileName.substring(fileName.lastIndexOf('/') + 1);
     }
-
-    protected void fatalErrorOccured(String error)
-    {
-        fatalError = true;
-        fatalErrorDescription = ("Fatal error occured (" + launcher.getState()
-                + "): " + error);
-    }
-
-    protected String readVersionFile(File file) throws Exception
-    {
-        DataInputStream dis = new DataInputStream(new FileInputStream(file));
-        String version = dis.readUTF();
-        dis.close();
-        return version;
-    }
-
-    protected void writeVersionFile(File file, String version) throws Exception
-    {
-        DataOutputStream dos = new DataOutputStream(new FileOutputStream(file));
-        dos.writeUTF(version);
-        dos.close();
-    }
-
-    protected String getFileName(URL url)
-    {
-        String fileName = url.getFile();
-        if (fileName.contains("?"))
-        {
-            fileName = fileName.substring(0, fileName.indexOf("?"));
-        }
-        return fileName.substring(fileName.lastIndexOf('/') + 1);
-    }
-
-    protected InputStream getJarInputStream(String currentFile,
-            URLConnection urlconnection) throws Exception
-    {
-        InputStream[] is = new InputStream[1];
-
-        for (int j = 0; (j < 3) && (is[0] == null); j++)
-        {
-            ClassesUtils.GameUpdaterThread t = new ClassesUtils.GameUpdaterThread();
-            t.is = is;
-            t.urlconnection = urlconnection;
-            t.setName("JarInputStreamThread");
-            t.start();
-
-            int iterationCount = 0;
-            while ((is[0] == null) && (iterationCount++ < 5))
-            {
-                try
-                {
-                    t.join(1000L);
-                }
-                catch (InterruptedException localInterruptedException)
-                {
-                }
-            }
-            if (is[0] != null)
-            {
-                continue;
-            }
-            try
-            {
-                t.interrupt();
-                t.join();
-            }
-            catch (InterruptedException localInterruptedException1)
-            {
-            }
-        }
-
-        if (is[0] == null)
-        {
-            throw new Exception("Unable to download " + currentFile);
-        }
-
-        return is[0];
-    }
-
-    protected void extractLZMA(String in, String out) throws Exception
-    {
-        File f = new File(in);
-        if (!f.exists())
-        {
-            return;
-        }
-        FileInputStream fileInputHandle = new FileInputStream(f);
-
-        Class<?> clazz = Class.forName("LZMA.LzmaInputStream");
-        Constructor<?> constructor = clazz
-                .getDeclaredConstructor(new Class[] { InputStream.class });
-
-        InputStream inputHandle = (InputStream) constructor
-                .newInstance(new Object[] { fileInputHandle });
-
-        OutputStream outputHandle = new FileOutputStream(out);
-
-        byte[] buffer = new byte[16384];
-
-        int ret = inputHandle.read(buffer);
-        while (ret >= 1)
-        {
-            outputHandle.write(buffer, 0, ret);
-            ret = inputHandle.read(buffer);
-        }
-
-        inputHandle.close();
-        outputHandle.close();
-
-        outputHandle = null;
-        inputHandle = null;
-
-        f.delete();
-    }
-
-    protected void extractPack(String in, String out) throws Exception
-    {
-        File f = new File(in);
-        if (!f.exists())
-        {
-            return;
-        }
-
-        FileOutputStream fostream = new FileOutputStream(out);
-        JarOutputStream jostream = new JarOutputStream(fostream);
-
-        Pack200.Unpacker unpacker = Pack200.newUnpacker();
-        unpacker.unpack(f, jostream);
-        jostream.close();
-
-        f.delete();
-    }
-
-    public void init()
+    
+    private void init()
     {
         try
         {
             Class.forName("LZMA.LzmaInputStream");
             lzmaSupported = true;
         }
-        catch (Throwable localThrowable)
+        catch (final Throwable localThrowable)
         {
         }
         try
@@ -716,9 +675,8 @@ public class GameUpdater implements Runnable
             Pack200.class.getSimpleName();
             pack200Supported = true;
         }
-        catch (Throwable localThrowable1)
+        catch (final Throwable localThrowable1)
         {
         }
     }
-
 }

@@ -15,10 +15,10 @@ import org.yaml.snakeyaml.Yaml;
 public class Configuration
 {
     private final Map<String, Object> config = new HashMap<String, Object>();
-
+    
     public boolean load(File file)
     {
-        String ext = file.getName().substring(
+        final String ext = file.getName().substring(
                 file.getName().lastIndexOf(".") + 1);
         String type;
         if (ext.equals("yml"))
@@ -33,25 +33,25 @@ public class Configuration
         {
             return load(new FileInputStream(file), type);
         }
-        catch (FileNotFoundException e)
+        catch (final FileNotFoundException e)
         {
             e.printStackTrace();
         }
         return false;
     }
-
+    
     public boolean load(InputStream inputStream)
     {
         return load(inputStream, "");
     }
-
+    
     @SuppressWarnings("unchecked")
     public boolean load(InputStream inputFile, String type)
     {
         if (type.equalsIgnoreCase("yaml"))
         {
-            Yaml yamlParser = new Yaml();
-            Map<String, Object> data = (Map<String, Object>) yamlParser
+            final Yaml yamlParser = new Yaml();
+            final Map<String, Object> data = (Map<String, Object>) yamlParser
                     .load(inputFile);
             if (data != null)
             {
@@ -60,34 +60,34 @@ public class Configuration
         }
         else
         {
-            Properties props = new Properties();
-
+            final Properties props = new Properties();
+            
             try
             {
                 props.load(inputFile);
             }
-            catch (IOException e)
+            catch (final IOException e)
             {
                 e.printStackTrace();
                 return false;
             }
-
-            for (Object key : props.stringPropertyNames())
+            
+            for (final Object key : props.stringPropertyNames())
             {
-                String name = key.toString();
-                String value = props.getProperty(name);
-
+                final String name = key.toString();
+                final String value = props.getProperty(name);
+                
                 config.put(name, value);
             }
         }
-
+        
         return true;
     }
-
+    
     @SuppressWarnings("unchecked")
     public void merge(Map<String, Object> from, Map<String, Object> to)
     {
-        for (String key : from.keySet())
+        for (final String key : from.keySet())
         {
             if (to.get(key) == null)
             {
@@ -107,54 +107,54 @@ public class Configuration
             }
         }
     }
-
+    
     public void set(String name, Object value)
     {
         config.put(name.toLowerCase(), value);
     }
-
+    
     public String getString(String name)
     {
         return (String) get(name);
     }
-
+    
     @SuppressWarnings("unchecked")
     public List<Object> getList(String name)
     {
         return (List<Object>) get(name);
     }
-
+    
     @SuppressWarnings("unchecked")
     public List<String> getStringList(String name)
     {
         return (List<String>) get(name);
     }
-
+    
     @SuppressWarnings("unchecked")
     public Map<String, Object> getNode(String name)
     {
         return (Map<String, Object>) get(name);
     }
-
+    
     public boolean getBoolean(String name)
     {
         return (Boolean) (get(name) == null ? false : get(name));
     }
-
+    
     public int getInteger(String name)
     {
         return (Integer) get(name);
     }
-
+    
     @SuppressWarnings("unchecked")
     public Object get(String nodeName)
     {
         if (nodeName.contains("."))
         {
-            String[] nodes = nodeName.split("\\.");
+            final String[] nodes = nodeName.split("\\.");
             Object currentNode = null;
-
-            for (String node : nodes)
+            
+            for (final String node : nodes)
             {
                 if (currentNode == null)
                 {
@@ -173,7 +173,7 @@ public class Configuration
                     }
                 }
             }
-
+            
             return currentNode;
         }
         else

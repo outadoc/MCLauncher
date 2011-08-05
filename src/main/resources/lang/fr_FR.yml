@@ -14,7 +14,7 @@ login:
   loggingIn: "Connexion..."
 options:
   forceUpdate: "Forcer la mise a jour"
-  willForce: "Nous le forcerons!"
+  willForce: "Sera force!"
   forceUpdateLabel: "Forcer la mise a jour du jeu"
   gameLocationLabel: "Repertoire d'installation"
 updater:
@@ -36,6 +36,6 @@ updater:
     START_REAL_APPLET: "Demarre le jeu"
     DONE: "Chargement fini"
 global:
-  yes: "Oui"
-  no: "Non"
+  yesStr: "Oui"
+  noStr: "Non"
   cancel: "Annuler"

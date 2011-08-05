@@ -27,16 +27,16 @@ public class OptionsPanel extends JDialog
 {
     private static final long   serialVersionUID = -8525835533380625378L;
     private final LauncherFrame launcherFrame;
-
+    
     public class AL implements ActionListener
     {
         public JButton forceButton;
-
+        
         public AL(JButton forceButton)
         {
             this.forceButton = forceButton;
         }
-
+        
         public void actionPerformed(ActionEvent arg0)
         {
             launcherFrame.config.set("force-update", "true");
@@ -44,29 +44,29 @@ public class OptionsPanel extends JDialog
                     .getString("options.willForce"));
             forceButton.setEnabled(false);
         }
-
+        
     }
-
+    
     public OptionsPanel(LauncherFrame parent)
     {
         super(parent);
         launcherFrame = parent;
-
+        
         setModal(true);
-
-        JPanel panel = new JPanel(new BorderLayout());
-        JLabel label = new JLabel("Launcher options", 0);
+        
+        final JPanel panel = new JPanel(new BorderLayout());
+        final JLabel label = new JLabel("Launcher options", 0);
         label.setBorder(new EmptyBorder(0, 0, 16, 0));
         label.setFont(new Font("Default", 1, 16));
         panel.add(label, "North");
-
-        JPanel optionsPanel = new JPanel(new BorderLayout());
-        JPanel labelPanel = new JPanel(new GridLayout(0, 1));
-        JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
+        
+        final JPanel optionsPanel = new JPanel(new BorderLayout());
+        final JPanel labelPanel = new JPanel(new GridLayout(0, 1));
+        final JPanel fieldPanel = new JPanel(new GridLayout(0, 1));
         optionsPanel.add(labelPanel, "West");
         optionsPanel.add(fieldPanel, "Center");
-
-        JButton forceButton = new JButton(
+        
+        final JButton forceButton = new JButton(
                 launcherFrame.locale.getString("options.forceUpdate"));
         if (launcherFrame.config.getString("force-update") != null)
         {
@@ -78,42 +78,42 @@ public class OptionsPanel extends JDialog
         labelPanel.add(new JLabel(launcherFrame.locale
                 .getString("options.forceUpdateLabel") + ": ", 4));
         fieldPanel.add(forceButton);
-
+        
         labelPanel.add(new JLabel(launcherFrame.locale
                 .getString("options.gameLocationLabel") + ": ", 4));
-        TransparentLabel dirLink = new TransparentLabel(Utils
+        final TransparentLabel dirLink = new TransparentLabel(Utils
                 .getWorkingDirectory(launcherFrame).toString()) {
             private static final long serialVersionUID = 0L;
-
+            
             @Override
             public void paint(Graphics g)
             {
                 super.paint(g);
-
+                
                 int x = 0;
                 int y = 0;
-
-                FontMetrics fm = g.getFontMetrics();
-                int width = fm.stringWidth(getText());
-                int height = fm.getHeight();
-
+                
+                final FontMetrics fm = g.getFontMetrics();
+                final int width = fm.stringWidth(getText());
+                final int height = fm.getHeight();
+                
                 if (getAlignmentX() == 2.0F)
                 {
                     x = 0;
                 }
                 else if (getAlignmentX() == 0.0F)
                 {
-                    x = (getBounds().width / 2) - (width / 2);
+                    x = getBounds().width / 2 - width / 2;
                 }
                 else if (getAlignmentX() == 4.0F)
                 {
                     x = getBounds().width - width;
                 }
-                y = ((getBounds().height / 2) + (height / 2)) - 1;
-
-                g.drawLine(x + 2, y, (x + width) - 2, y);
+                y = getBounds().height / 2 + height / 2 - 1;
+                
+                g.drawLine(x + 2, y, x + width - 2, y);
             }
-
+            
             @Override
             public void update(Graphics g)
             {
@@ -132,21 +132,21 @@ public class OptionsPanel extends JDialog
                                     .getAbsolutePath().replaceAll(" ", "%20"))
                             .toURI());
                 }
-                catch (Exception e)
+                catch (final Exception e)
                 {
                     e.printStackTrace();
                 }
             }
         });
         dirLink.setForeground(new Color(2105599));
-
+        
         fieldPanel.add(dirLink);
-
+        
         panel.add(optionsPanel, "Center");
-
-        JPanel buttonsPanel = new JPanel(new BorderLayout());
+        
+        final JPanel buttonsPanel = new JPanel(new BorderLayout());
         buttonsPanel.add(new JPanel(), "Center");
-        JButton doneButton = new JButton("Done");
+        final JButton doneButton = new JButton("Done");
         doneButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae)
             {
@@ -155,9 +155,9 @@ public class OptionsPanel extends JDialog
         });
         buttonsPanel.add(doneButton, "East");
         buttonsPanel.setBorder(new EmptyBorder(16, 0, 0, 0));
-
+        
         panel.add(buttonsPanel, "South");
-
+        
         add(panel);
         panel.setBorder(new EmptyBorder(16, 24, 24, 24));
         pack();

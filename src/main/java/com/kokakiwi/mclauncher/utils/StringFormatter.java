@@ -7,9 +7,9 @@ public class StringFormatter
     public static String format(String from, Map<String, String> keys)
     {
         String finalString = from;
-        for (String key : keys.keySet())
+        for (final String key : keys.keySet())
         {
-            String value = keys.get(key);
+            final String value = keys.get(key);
             finalString = finalString.replaceAll("\\{" + key.toUpperCase()
                     + "\\}", value);
         }

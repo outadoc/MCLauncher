@@ -3,7 +3,6 @@ package com.kokakiwi.mclauncher;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -13,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
@@ -23,70 +23,69 @@ import com.kokakiwi.mclauncher.utils.LocalString;
 import com.kokakiwi.mclauncher.utils.StringFormatter;
 import com.kokakiwi.mclauncher.utils.Utils;
 
-public class LauncherFrame extends Frame
+public class LauncherFrame extends JFrame
 {
     private static final long serialVersionUID = -439450888759860507L;
-
+    
     public Configuration      config           = new Configuration();
-
+    
     public JPanel             panel;
     public LoginForm          loginForm;
     public Launcher           launcher;
     public LocalString        locale;
-
+    
     public LauncherFrame()
     {
         super();
-
+        
         config.load(Utils.getResourceAsStream("config/config.yml"), "Yaml");
-        config.load(Utils.getResourceAsStream("config/launcher.properties"));
-
-        File configFile = new File("./config.yml");
-
+        
+        final File configFile = new File("./config.yml");
+        
         if (!configFile.exists())
         {
             try
             {
                 configFile.createNewFile();
             }
-            catch (IOException e)
+            catch (final IOException e)
             {
                 e.printStackTrace();
             }
         }
-
+        
         config.load(configFile);
-
+        
         locale = new LocalString(this, config.getStringList("launcher.langs"));
-
+        
         setTitle(config.getString("launcher.windowTitle"));
         setBackground(Color.BLACK);
-
+        
         panel = new JPanel();
         panel.setLayout(new BorderLayout());
         panel.setPreferredSize(new Dimension(854, 480));
-
+        
         loginForm = new LoginForm(this);
         panel.add(loginForm);
-
+        
         setLayout(new BorderLayout());
         add(panel, "Center");
-
+        
         pack();
         setLocationRelativeTo(null);
-
+        
         try
         {
             setIconImage(ImageIO.read(Utils
                     .getResourceAsStream("res/favicon.png")));
         }
-        catch (IOException e)
+        catch (final IOException e)
         {
             e.printStackTrace();
         }
-
+        
         addWindowListener(new WindowAdapter() {
-
+            
             @Override
             public void windowClosing(WindowEvent paramWindowEvent)
             {
@@ -98,7 +97,7 @@ public class LauncherFrame extends Frame
                         {
                             Thread.sleep(30000L);
                         }
-                        catch (InterruptedException e)
+                        catch (final InterruptedException e)
                         {
                             e.printStackTrace();
                         }
@@ -108,15 +107,15 @@ public class LauncherFrame extends Frame
                 }.start();
                 System.exit(0);
             }
-
+            
         });
     }
-
+    
     @SuppressWarnings("deprecation")
     public void login()
     {
-        boolean offlineMode = config.getBoolean("launcher.offlineMode");
-
+        final boolean offlineMode = config.getBoolean("launcher.offlineMode");
+        
         if (offlineMode)
         {
             playOffline();
@@ -126,14 +125,14 @@ public class LauncherFrame extends Frame
             try
             {
                 loginForm.setStatusText(locale.getString("login.loggingIn"));
-                Map<String, String> keys = new HashMap<String, String>();
+                final Map<String, String> keys = new HashMap<String, String>();
                 keys.put("USERNAME",
                         URLEncoder.encode(loginForm.getUserName(), "UTF-8"));
                 keys.put("PASSWORD",
                         URLEncoder.encode(new String(loginForm.getPassword())));
-                String parameters = StringFormatter.format(
+                final String parameters = StringFormatter.format(
                         config.getString("launcher.loginParameters"), keys);
-                String result = Utils.executePost(
+                final String result = Utils.executePost(
                         config.getString("launcher.loginURL"), parameters,
                         config.getString("updater.keyFileName"));
                 if (result == null)
@@ -161,23 +160,23 @@ public class LauncherFrame extends Frame
                     }
                     return;
                 }
-                String[] values = result.split(":");
+                final String[] values = result.split(":");
                 config.set("latestVersion", values[0].trim());
                 config.set("downloadTicket", values[1].trim());
                 config.set("userName", values[2].trim());
                 config.set("sessionID", values[3].trim());
                 loginForm.loginOk();
-
+                
                 runGame();
-
+                
             }
-            catch (Exception e)
+            catch (final Exception e)
             {
                 e.printStackTrace();
             }
         }
     }
-
+    
     public void playOffline()
     {
         config.set("latestVersion", "-1");
@@ -185,7 +184,7 @@ public class LauncherFrame extends Frame
         loginForm.loginOk();
         runGame();
     }
-
+    
     public void doLogin()
     {
         new Thread() {
@@ -196,36 +195,36 @@ public class LauncherFrame extends Frame
             }
         }.start();
     }
-
+    
     public void loginError()
     {
-
+        
     }
-
+    
     public void runGame()
     {
         launcher = new Launcher(this);
         launcher.init();
-
+        
         removeAll();
         add(launcher, "Center");
         validate();
-
+        
         launcher.start();
-
+        
         setTitle("Minecraft");
     }
-
+    
     public static void main(String[] args)
     {
         try
         {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
         }
-        LauncherFrame launcherFrame = new LauncherFrame();
+        final LauncherFrame launcherFrame = new LauncherFrame();
         launcherFrame.setVisible(true);
         launcherFrame.config.set("stand-alone", "true");
         if (args.length >= 3)
@@ -234,11 +233,11 @@ public class LauncherFrame extends Frame
             String port = "25565";
             if (ip.contains(":"))
             {
-                String[] parts = ip.split(":");
+                final String[] parts = ip.split(":");
                 ip = parts[0];
                 port = parts[1];
             }
-
+            
             launcherFrame.config.set("server", ip);
             launcherFrame.config.set("port", port);
         }

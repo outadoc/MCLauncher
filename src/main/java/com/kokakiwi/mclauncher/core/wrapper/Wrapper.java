@@ -25,8 +25,6 @@ public class Wrapper
     {
         // Make Minecraft portable ! :D
         final File workDirectory = Utils.getWorkingDirectory(launcherFrame);
-        System.getenv().put("APPDATA", workDirectory.getAbsolutePath());
-        System.setProperty("user.home", workDirectory.getAbsolutePath());
         
         try
         {

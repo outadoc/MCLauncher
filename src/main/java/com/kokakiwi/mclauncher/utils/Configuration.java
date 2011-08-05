@@ -181,4 +181,9 @@ public class Configuration
             return config.get(nodeName.toLowerCase());
         }
     }
+    
+    public boolean has(String node)
+    {
+        return get(node) != null;
+    }
 }

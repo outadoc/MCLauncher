@@ -3,6 +3,7 @@ package com.kokakiwi.mclauncher;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -12,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
@@ -20,12 +20,16 @@ import com.kokakiwi.mclauncher.core.Launcher;
 import com.kokakiwi.mclauncher.graphics.LoginForm;
 import com.kokakiwi.mclauncher.utils.Configuration;
 import com.kokakiwi.mclauncher.utils.LocalString;
+import com.kokakiwi.mclauncher.utils.MCLogger;
 import com.kokakiwi.mclauncher.utils.StringFormatter;
 import com.kokakiwi.mclauncher.utils.Utils;
+import com.kokakiwi.mclauncher.utils.Version;
 
-public class LauncherFrame extends JFrame
+public class LauncherFrame extends Frame
 {
     private static final long serialVersionUID = -439450888759860507L;
+    
+    public static Version     APP_VERSION      = new Version(0, 9, 3);
     
     public Configuration      config           = new Configuration();
     
@@ -37,11 +41,10 @@ public class LauncherFrame extends JFrame
     public LauncherFrame()
     {
         super();
+        MCLogger.info("Starting MCLauncher [" + APP_VERSION + "]...");
         
         config.load(Utils.getResourceAsStream("config/config.yml"), "Yaml");
-        
-        final File configFile = new File("./config.yml");
-        
+        final File configFile = new File("config.yml");
         if (!configFile.exists())
         {
             try
@@ -53,8 +56,16 @@ public class LauncherFrame extends JFrame
                 e.printStackTrace();
             }
         }
-        
         config.load(configFile);
+        MCLogger.setConfig(config);
+        
+        if(config.getBoolean("launcher.autoConnectServer.connect"))
+        {
+            config.set("server", config.getString("launcher.autoConnectServer.ip"));
+            config.set("port", config.getString("launcher.autoConnectServer.port"));
+        }
+        
+        MCLogger.printSystemInfos();
         
         locale = new LocalString(this, config.getStringList("launcher.langs"));
         
@@ -125,6 +136,7 @@ public class LauncherFrame extends JFrame
             try
             {
                 loginForm.setStatusText(locale.getString("login.loggingIn"));
+                MCLogger.info("Logging in...");
                 final Map<String, String> keys = new HashMap<String, String>();
                 keys.put("USERNAME",
                         URLEncoder.encode(loginForm.getUserName(), "UTF-8"));
@@ -187,6 +199,7 @@ public class LauncherFrame extends JFrame
     
     public void doLogin()
     {
+        MCLogger.debug("doLogin");
         new Thread() {
             @Override
             public void run()
@@ -212,7 +225,7 @@ public class LauncherFrame extends JFrame
         
         launcher.start();
         
-        setTitle("Minecraft");
+        setTitle(config.getString("gameLauncher.gameName"));
     }
     
     public static void main(String[] args)

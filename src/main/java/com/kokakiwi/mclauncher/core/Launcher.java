@@ -20,6 +20,7 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 
 import com.kokakiwi.mclauncher.LauncherFrame;
+import com.kokakiwi.mclauncher.utils.MCLogger;
 import com.kokakiwi.mclauncher.utils.State;
 import com.kokakiwi.mclauncher.utils.Utils;
 
@@ -29,7 +30,7 @@ public class Launcher extends Applet implements Runnable, AppletStub,
     private static final long   serialVersionUID = -2433230602156426362L;
     
     private final LauncherFrame launcherFrame;
-    public Applet               applet;
+    public Applet               applet           = null;
     private Image               bgImage;
     private int                 context          = 0;
     private boolean             active           = false;
@@ -451,6 +452,7 @@ public class Launcher extends Applet implements Runnable, AppletStub,
     public void setState(State state)
     {
         this.state = state;
+        MCLogger.info(this.getDescriptionForState());
     }
     
     public State getState()

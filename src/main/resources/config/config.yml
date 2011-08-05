@@ -3,14 +3,20 @@ launcher:
     browserHomeURL: 'http://mcupdate.tumblr.com/'
     loginURL: 'https://login.minecraft.net/'
     loginParameters: 'user={USERNAME}&password={PASSWORD}&version=13'
-    offlineMode: true
+    offlineMode: false
     langs:
         - 'fr_FR'
         - 'en_US'
+    debugMode: true
+    autoConnectServer:
+        connect: false
+        address: ''
+        port: ''
 updater:
+    askMinecraftUpdateIfAvailable: true
     customGameDir: false
     gameDir: ''
-    folderName: 'minecraft-launcher'
+    folderName: 'minecraft'
     keyFileName: 'minecraft.key'
     loginFileEncryptionKey: 'passwordfile'
     jarList:

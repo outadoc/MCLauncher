@@ -21,6 +21,7 @@ import java.util.zip.ZipFile;
 
 import com.kokakiwi.mclauncher.LauncherFrame;
 import com.kokakiwi.mclauncher.utils.DownloadThread;
+import com.kokakiwi.mclauncher.utils.MCLogger;
 import com.kokakiwi.mclauncher.utils.State;
 import com.kokakiwi.mclauncher.utils.Utils;
 import com.kokakiwi.mclauncher.utils.Utils.OS;
@@ -88,7 +89,7 @@ public class GameUpdater implements Runnable
                 if (forceUpdate || !cacheAvailable)
                 {
                     shouldUpdate = true;
-                    if (!forceUpdate && versionFile.exists())
+                    if (!forceUpdate && versionFile.exists() && launcherFrame.config.getBoolean("updater.askMinecraftUpdateIfAvailable"))
                     {
                         checkShouldUpdate();
                     }
@@ -236,6 +237,7 @@ public class GameUpdater implements Runnable
         {
             if (thread != null)
             {
+                MCLogger.info("Download " + thread.getFileName());
                 thread.start();
                 while (!thread.isDownloaded())
                 {

@@ -13,7 +13,8 @@ launcher:
         address: ''
         port: ''
 updater:
-    askMinecraftUpdateIfAvailable: true
+    askUpdateIfAvailable: true
+    updateIfNewVersionAvailable: true
     customGameDir: false
     gameDir: ''
     folderName: 'minecraft'
@@ -31,6 +32,11 @@ updater:
         linux: 'http://s3.amazonaws.com/MinecraftDownload/linux_natives.jar.lzma'
         macos: 'http://s3.amazonaws.com/MinecraftDownload/macosx_natives.jar.lzma'
         solaris: 'http://s3.amazonaws.com/MinecraftDownload/solaris_natives.jar.lzma'
+    customVersion:
+        use: false
+        fileName: 'cversion'
+        checkUrl: ''
+        updateIfAvailable: true
 gameLauncher:
     gameName: 'Minecraft'
     documentBaseURL: 'http://www.minecraft.net/game/'

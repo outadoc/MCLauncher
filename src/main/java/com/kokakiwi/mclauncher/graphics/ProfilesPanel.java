@@ -85,6 +85,12 @@ public class ProfilesPanel extends JDialog
         contentPanel.add(btnEdit);
         
         final JButton btnRemove = new JButton("Remove");
+        btnRemove.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                launcherFrame.profiles.deleteProfile((Profile) list.getSelectedValue());
+                refreshList();
+            }
+        });
         btnRemove.setBounds(295, 76, 89, 23);
         contentPanel.add(btnRemove);
         {

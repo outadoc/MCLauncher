@@ -29,7 +29,7 @@ public class LauncherFrame extends Frame
 {
     private static final long serialVersionUID = -439450888759860507L;
     
-    public static Version     APP_VERSION      = new Version(0, 9, 3);
+    public static Version     APP_VERSION      = new Version(0, 9, 4);
     
     public ProfileManager     profiles         = new ProfileManager();
     

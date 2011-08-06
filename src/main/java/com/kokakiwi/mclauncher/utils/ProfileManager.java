@@ -50,8 +50,37 @@ public class ProfileManager
         }
         catch (final Exception e)
         {
-            MCLogger.warning(e.getLocalizedMessage());
+            MCLogger.error(e.getLocalizedMessage());
         }
+    }
+    
+    public void deleteProfile(Profile profile)
+    {
+        deleteProfile(profile.getID());
+    }
+    
+    public void deleteProfile(String id)
+    {
+        File profileDir = new File("profiles/" + id);
+        deleteDirectory(profileDir);
+        profiles.remove(id);
+    }
+    
+    public void deleteDirectory(File dir)
+    {
+        if(dir.isDirectory())
+        {
+            for(String sub : dir.list())
+            {
+                File subElement = new File(dir, sub);
+                if(subElement.isDirectory())
+                {
+                    deleteDirectory(subElement);
+                }
+                subElement.delete();
+            }
+        }
+        dir.delete();
     }
     
     public Profile getCurrentProfile()

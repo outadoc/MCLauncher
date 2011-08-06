@@ -10,6 +10,7 @@ import java.util.Vector;
 
 import com.kokakiwi.mclauncher.LauncherFrame;
 import com.kokakiwi.mclauncher.core.wrapper.Wrapper;
+import com.kokakiwi.mclauncher.utils.MCLogger;
 import com.kokakiwi.mclauncher.utils.State;
 import com.kokakiwi.mclauncher.utils.java.Utils;
 
@@ -37,10 +38,7 @@ public class GameLauncher implements Runnable
                         + File.separator + "bin" + File.separator;
                 final File dir = new File(path);
                 updateClassPath(dir);
-                if (System.getenv("debugMode") == null)
-                {
-                    runGame();
-                }
+                runGame();
             }
         }
         catch (final Exception e)
@@ -63,10 +61,11 @@ public class GameLauncher implements Runnable
                 final String fileName = launcher.updater
                         .getJarName(launcher.updater.getJarURLs()[i]);
                 urls[i] = new File(dir, fileName).toURI().toURL();
+                MCLogger.info("Adding " + urls[i].getFile() + " to Classpath.");
             }
             catch (final MalformedURLException e)
             {
-                e.printStackTrace();
+                MCLogger.error(e.getLocalizedMessage());
             }
         }
         
@@ -130,7 +129,11 @@ public class GameLauncher implements Runnable
         wrapper.init();
         if (wrapper.createApplet())
         {
-            launcher.replace(wrapper.getApplet());
+            MCLogger.info("Start game.");
+            if (System.getenv("debugMode") == null)
+            {
+                launcher.replace(wrapper.getApplet());
+            }
         }
     }
     

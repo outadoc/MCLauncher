@@ -19,12 +19,13 @@ public class TexturedPanel extends JPanel
     private Image             img;
     private Image             bgImage;
     
-    public TexturedPanel()
+    public TexturedPanel(String url)
     {
+        
         setOpaque(true);
         try
         {
-            bgImage = ImageIO.read(Utils.getResourceAsStream("res/dirt.png"))
+            bgImage = ImageIO.read(Utils.getResourceAsStream(url))
                     .getScaledInstance(32, 32, 16);
         }
         catch (final IOException e)

@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import com.kokakiwi.mclauncher.LauncherFrame;
+import com.kokakiwi.mclauncher.utils.MCLogger;
 import com.kokakiwi.mclauncher.utils.java.Utils;
 
 public class Wrapper
@@ -50,7 +51,7 @@ public class Wrapper
         }
         catch (final ClassNotFoundException e)
         {
-            e.printStackTrace();
+            MCLogger.info(e.getLocalizedMessage());
         }
     }
     
@@ -63,15 +64,15 @@ public class Wrapper
         }
         catch (final ClassNotFoundException e)
         {
-            e.printStackTrace();
+            MCLogger.info(e.getLocalizedMessage());
         }
         catch (final InstantiationException e)
         {
-            e.printStackTrace();
+            MCLogger.info(e.getLocalizedMessage());
         }
         catch (final IllegalAccessException e)
         {
-            e.printStackTrace();
+            MCLogger.info(e.getLocalizedMessage());
         }
         return false;
     }

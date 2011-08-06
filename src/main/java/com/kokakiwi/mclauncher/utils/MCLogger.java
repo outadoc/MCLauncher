@@ -1,5 +1,7 @@
 package com.kokakiwi.mclauncher.utils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
@@ -45,6 +47,11 @@ public class MCLogger
         logger.warning(message);
     }
     
+    public static void error(String message)
+    {
+        logger.severe(message);
+    }
+    
     public static void debug(String message)
     {
         if (System.getenv("debugMode") != null
@@ -56,29 +63,25 @@ public class MCLogger
     
     public static void printSystemInfos()
     {
+        Map<String, String> infos = new HashMap<String, String>();
+        infos.put("OS Name", System.getProperty("os.name") + " (" + SystemUtils.getSystemOS().getName() + ")");
+        infos.put("OS Arch", System.getProperty("os.arch") + " (" + SystemUtils.getSystemArch() + ")");
+        infos.put("Java version", System.getProperty("java.version"));
+        infos.put("Java API Version", System.getProperty("java.class.version"));
+        infos.put("Launcher path", SystemUtils.getExecDirectoryPath());
+        
         final StringBuffer sb = new StringBuffer();
-        sb.append("System informations:\r\n");
-        sb.append("\tOS Name: ");
-        sb.append(System.getProperty("os.name"));
-        sb.append(" (");
-        sb.append(SystemUtils.getSystemOS().getName());
-        sb.append(") ");
-        sb.append(System.getProperty("os.version"));
-        sb.append("\r\n");
-        sb.append("\tOS Arch: ");
-        sb.append(System.getProperty("os.arch"));
-        sb.append(" (");
-        sb.append(SystemUtils.getSystemArch());
-        sb.append(")\r\n");
-        sb.append("\tJava Version: ");
-        sb.append(System.getProperty("java.version"));
-        sb.append("\r\n");
-        sb.append("\tJava API Version: ");
-        sb.append(System.getProperty("java.class.version"));
-        sb.append("\r\n");
-        sb.append("\tLauncher path: ");
-        sb.append(SystemUtils.getExecDirectoryPath());
-        sb.append("\r\n");
+        sb.append("System informations:");
+        sb.append(System.lineSeparator());
+        for(String key : infos.keySet())
+        {
+            String value = infos.get(key);
+            sb.append("\t");
+            sb.append(key);
+            sb.append(" : ");
+            sb.append(value);
+            sb.append(System.lineSeparator());
+        }
         
         debug(sb.toString());
     }

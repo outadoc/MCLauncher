@@ -53,7 +53,7 @@ public class DownloadThread extends Thread
         }
         catch (final IOException e)
         {
-            MCLogger.warning(e.getLocalizedMessage());
+            MCLogger.error(e.getLocalizedMessage());
         }
     }
     
@@ -142,7 +142,7 @@ public class DownloadThread extends Thread
         }
         catch (final Exception e)
         {
-            MCLogger.warning(e.getLocalizedMessage());
+            MCLogger.error(e.getLocalizedMessage());
         }
     }
     

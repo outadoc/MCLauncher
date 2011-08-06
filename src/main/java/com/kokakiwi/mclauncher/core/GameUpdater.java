@@ -25,6 +25,7 @@ import com.kokakiwi.mclauncher.utils.State;
 import com.kokakiwi.mclauncher.utils.java.DownloadThread;
 import com.kokakiwi.mclauncher.utils.java.Utils;
 import com.kokakiwi.mclauncher.utils.java.Utils.OS;
+import com.kokakiwi.mclauncher.utils.java.Version;
 
 public class GameUpdater implements Runnable
 {
@@ -33,9 +34,10 @@ public class GameUpdater implements Runnable
     
     private boolean             lzmaSupported;
     private boolean             pack200Supported;
-    public boolean              fatalError   = false;
+    public boolean              fatalError            = false;
     public String               fatalErrorDescription;
-    public boolean              shouldUpdate = false;
+    public boolean              shouldUpdate          = false;
+    public String               latestVersionToUpdate = null;
     
     private URL[]               jarUrls;
     private URL[]               additionalsUrls;
@@ -67,64 +69,104 @@ public class GameUpdater implements Runnable
                 dir.mkdirs();
             }
             
+            // Check version
+            boolean forceUpdate = launcherFrame.getConfig().getString(
+                    "force-update") == null ? false : true;
+            
             final String latestVersion = launcherFrame.getConfig().getString(
                     "latestVersion");
-            
+            File versionFile = new File(dir, "version");
             if (latestVersion != null)
             {
-                final boolean forceUpdate = launcherFrame.getConfig()
-                        .getString("force-update") == null ? false : true;
-                final File versionFile = new File(dir, "version");
-                
-                boolean cacheAvailable = false;
-                if (!forceUpdate
-                        && versionFile.exists()
-                        && (latestVersion.equals("-1") || latestVersion
-                                .equals(readVersionFile(versionFile))))
+                if (versionFile.exists())
                 {
-                    cacheAvailable = true;
-                    launcher.setPercentage(90);
-                }
-                
-                if (forceUpdate || !cacheAvailable)
-                {
-                    shouldUpdate = true;
-                    if (!forceUpdate
-                            && versionFile.exists()
-                            && launcherFrame.getConfig().getBoolean(
-                                    "updater.askMinecraftUpdateIfAvailable"))
+                    if (!latestVersion.equals(readVersionFile(versionFile))
+                            || latestVersion.equals("-1"))
                     {
-                        checkShouldUpdate();
-                    }
-                    if (shouldUpdate || forceUpdate)
-                    {
-                        writeVersionFile(versionFile, "");
-                        
-                        downloadFiles(path);
-                        extractJars(path);
-                        extractAdditionals(Utils.getWorkingDirectory(
-                                launcherFrame).getAbsolutePath()
-                                + File.separatorChar);
-                        extractNative(path);
-                        
-                        if (latestVersion != null
-                                && !latestVersion.equals("-1"))
+                        MCLogger.info("Update available for Base game. New version : "
+                                + latestVersion);
+                        if (launcherFrame.getConfig().getBoolean(
+                                "updater.updateIfNewVersionAvailable"))
                         {
-                            launcher.setPercentage(90);
-                            writeVersionFile(versionFile, latestVersion);
+                            shouldUpdate = true;
                         }
                     }
-                    else
+                }
+                else
+                {
+                    forceUpdate = true;
+                }
+            }
+            
+            boolean useCustomVersion = launcherFrame.getConfig().getBoolean(
+                    "updater.customVersion.use");
+            Version latestCustomVersion = new Version();
+            if (useCustomVersion)
+            {
+                latestCustomVersion = Version.parseString(Utils.executePost(
+                        launcherFrame.getConfig().getString(
+                                "updater.customVersion.checkUrl"), "", ""));
+                File customVersionFile = new File(dir, launcherFrame
+                        .getConfig()
+                        .getString("updater.customVersion.fileName"));
+                if (customVersionFile.exists())
+                {
+                    Version currentVersion = Version
+                            .parseString(readVersionFile(customVersionFile));
+                    if (latestCustomVersion.compareTo(currentVersion) > 0)
                     {
-                        cacheAvailable = true;
-                        launcher.setPercentage(90);
+                        MCLogger.info("Update available for custom. New version : "
+                                + latestCustomVersion);
+                        
+                        if (launcherFrame.getConfig().getBoolean(
+                                "updater.customVersion.updateIfAvailable"))
+                        {
+                            shouldUpdate = true;
+                            latestVersionToUpdate = latestCustomVersion
+                                    .toString();
+                        }
                     }
                 }
+                else
+                {
+                    shouldUpdate = true;
+                }
+            }
+            
+            // Ask update if available
+            
+            if (shouldUpdate
+                    && !forceUpdate
+                    && launcherFrame.getConfig().getBoolean(
+                            "updater.askUpdateIfAvailable"))
+            {
+                checkShouldUpdate();
+            }
+            
+            // Do update
+            if (shouldUpdate || forceUpdate)
+            {
+                writeVersionFile(versionFile, latestVersion.equals("-1") ? ""
+                        : latestVersion);
+                if (useCustomVersion)
+                {
+                    File customVersionFile = new File(dir, launcherFrame
+                            .getConfig().getString(
+                                    "updater.customVersion.fileName"));
+                    writeVersionFile(customVersionFile,
+                            latestCustomVersion.toString());
+                }
+                
+                downloadFiles(path);
+                extractJars(path);
+                extractAdditionals(Utils.getWorkingDirectory(launcherFrame)
+                        .getAbsolutePath() + File.separatorChar);
+                extractNative(path);
             }
         }
         catch (final Exception e)
         {
-            e.printStackTrace();
+            MCLogger.error(e.getLocalizedMessage());
         }
         
         setPercentage(90);
@@ -438,6 +480,10 @@ public class GameUpdater implements Runnable
     
     private void writeVersionFile(File file, String version) throws Exception
     {
+        if (!file.exists())
+        {
+            file.createNewFile();
+        }
         final DataOutputStream dos = new DataOutputStream(new FileOutputStream(
                 file));
         dos.writeUTF(version);

@@ -60,7 +60,7 @@ public class LoginForm extends JPanel
     private final TransparentButton   offlineButton;
     private final TransparentLabel    statusText       = new TransparentLabel(
                                                                "", 0);
-    private final JPanel              southPanel       = new TexturedPanel();
+    private final JPanel              southPanel       = new TexturedPanel("res/dirt.png");
     
     public LoginForm(LauncherFrame launcherFrame)
     {
@@ -78,6 +78,25 @@ public class LoginForm extends JPanel
                 launcherFrame.locale.getString("login.retryButton"));
         offlineButton = new TransparentButton(
                 launcherFrame.locale.getString("login.offlineButton"));
+        
+        launchButton.addActionListener(new ClassesUtils.LaunchActionListener(
+                launcherFrame));
+        userName.addActionListener(new ClassesUtils.LaunchActionListener(
+                launcherFrame));
+        password.addActionListener(new ClassesUtils.LaunchActionListener(
+                launcherFrame));
+        retryButton.addActionListener(new ClassesUtils.TryAgainActionListener(
+                launcherFrame));
+        offlineButton
+                .addActionListener(new ClassesUtils.PlayOfflineActionListener(
+                        launcherFrame));
+        optionsButton.addActionListener(new ActionListener() {
+            
+            public void actionPerformed(ActionEvent paramActionEvent)
+            {
+                new OptionsPanel(LoginForm.this.launcherFrame).setVisible(true);
+            }
+        });
         
         readUsername();
         
@@ -111,7 +130,7 @@ public class LoginForm extends JPanel
     {
         final JPanel panel = new TransparentPanel(new BorderLayout());
         
-        if (System.getenv("debugMode") == null)
+        if (System.getenv("debugMode") == null || true)
         {
             panel.add(getUpdateNews(), "Center");
         }
@@ -124,25 +143,6 @@ public class LoginForm extends JPanel
         southPanel.setPreferredSize(new Dimension(100, 100));
         
         panel.add(southPanel, "South");
-        
-        launchButton.addActionListener(new ClassesUtils.LaunchActionListener(
-                launcherFrame));
-        userName.addActionListener(new ClassesUtils.LaunchActionListener(
-                launcherFrame));
-        password.addActionListener(new ClassesUtils.LaunchActionListener(
-                launcherFrame));
-        retryButton.addActionListener(new ClassesUtils.TryAgainActionListener(
-                launcherFrame));
-        offlineButton
-                .addActionListener(new ClassesUtils.PlayOfflineActionListener(
-                        launcherFrame));
-        optionsButton.addActionListener(new ActionListener() {
-            
-            public void actionPerformed(ActionEvent paramActionEvent)
-            {
-                new OptionsPanel(launcherFrame).setVisible(true);
-            }
-        });
         
         return panel;
     }
@@ -231,7 +231,12 @@ public class LoginForm extends JPanel
                     .getConfig().getString("launcher.browserHomeURL")).start();
             editorPane.setBackground(Color.DARK_GRAY);
             editorPane.setEditable(false);
-            scrollPane = new JScrollPane(editorPane);
+            scrollPane = new JScrollPane(editorPane)
+            {
+                private static final long serialVersionUID = -5094614353925459036L;
+                
+                
+            };
             scrollPane.setBorder(null);
             editorPane.setMargin(null);
             

@@ -16,6 +16,7 @@ import javax.net.ssl.HttpsURLConnection;
 
 import com.kokakiwi.mclauncher.LauncherFrame;
 import com.kokakiwi.mclauncher.core.wrapper.JavaUtils;
+import com.kokakiwi.mclauncher.utils.MCLogger;
 
 public class Utils
 {
@@ -176,7 +177,7 @@ public class Utils
         }
         catch (final Exception e)
         {
-            e.printStackTrace();
+            MCLogger.error(e.getLocalizedMessage());
             return null;
         }
         finally

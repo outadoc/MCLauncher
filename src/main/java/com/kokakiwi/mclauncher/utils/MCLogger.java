@@ -7,12 +7,14 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
+import com.kokakiwi.mclauncher.utils.java.SystemUtils;
+
 public class MCLogger
 {
     private static Configuration config;
     
     // private static Logger global = Logger.getGlobal();
-    private static Logger logger = Logger.getLogger("MCLauncher");
+    private static Logger        logger = Logger.getLogger("MCLauncher");
     
     static
     {
@@ -45,7 +47,8 @@ public class MCLogger
     
     public static void debug(String message)
     {
-        if(System.getenv("debugMode") != null || config.getBoolean("launcher.debugMode"))
+        if (System.getenv("debugMode") != null
+                || config.getBoolean("launcher.debugMode"))
         {
             logger.log(new Debug(), message);
         }
@@ -53,7 +56,7 @@ public class MCLogger
     
     public static void printSystemInfos()
     {
-        StringBuffer sb = new StringBuffer();
+        final StringBuffer sb = new StringBuffer();
         sb.append("System informations:\r\n");
         sb.append("\tOS Name: ");
         sb.append(System.getProperty("os.name"));
@@ -79,12 +82,12 @@ public class MCLogger
         
         debug(sb.toString());
     }
-
+    
     public static void setConfig(Configuration config)
     {
         MCLogger.config = config;
     }
-
+    
     public static class MCFormatter extends Formatter
     {
         
@@ -105,7 +108,7 @@ public class MCLogger
     private static class Debug extends Level
     {
         private static final long serialVersionUID = 606354531090515777L;
-
+        
         protected Debug()
         {
             super("DEBUG", Level.INFO.intValue());

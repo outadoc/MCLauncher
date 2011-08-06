@@ -1,4 +1,4 @@
-package com.kokakiwi.mclauncher.utils;
+package com.kokakiwi.mclauncher.utils.java;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -8,6 +8,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.MessageDigest;
+
+import com.kokakiwi.mclauncher.utils.MCLogger;
 
 public class DownloadThread extends Thread
 {

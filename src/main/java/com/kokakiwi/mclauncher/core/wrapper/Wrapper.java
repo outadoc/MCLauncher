@@ -6,7 +6,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import com.kokakiwi.mclauncher.LauncherFrame;
-import com.kokakiwi.mclauncher.utils.Utils;
+import com.kokakiwi.mclauncher.utils.java.Utils;
 
 public class Wrapper
 {

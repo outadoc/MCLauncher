@@ -1,4 +1,4 @@
-package com.kokakiwi.mclauncher.utils;
+package com.kokakiwi.mclauncher.utils.java;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -30,9 +30,9 @@ public class Utils
     public static File getWorkingDirectory(LauncherFrame launcherFrame)
     {
         return getWorkingDirectory(
-                launcherFrame.config.getString("updater.folderName"),
-                launcherFrame.config.getBoolean("updater.customGameDir") ? launcherFrame.config
-                        .getString("updater.gameDir") : null);
+                launcherFrame.getConfig().getString("updater.folderName"),
+                launcherFrame.getConfig().getBoolean("updater.customGameDir") ? launcherFrame
+                        .getConfig().getString("updater.gameDir") : null);
     }
     
     public static File getWorkingDirectory(String applicationName, String local)

@@ -1,4 +1,4 @@
-package com.kokakiwi.mclauncher.utils;
+package com.kokakiwi.mclauncher.utils.java;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,7 +41,7 @@ public class ClassesUtils
         
         public void actionPerformed(ActionEvent paramActionEvent)
         {
-            launcherFrame.loginForm.loginMode();
+            launcherFrame.loginForm.refreshLoginBox();
         }
         
     }

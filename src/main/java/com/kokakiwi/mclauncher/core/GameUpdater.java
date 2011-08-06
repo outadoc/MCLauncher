@@ -20,11 +20,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import com.kokakiwi.mclauncher.LauncherFrame;
-import com.kokakiwi.mclauncher.utils.DownloadThread;
 import com.kokakiwi.mclauncher.utils.MCLogger;
 import com.kokakiwi.mclauncher.utils.State;
-import com.kokakiwi.mclauncher.utils.Utils;
-import com.kokakiwi.mclauncher.utils.Utils.OS;
+import com.kokakiwi.mclauncher.utils.java.DownloadThread;
+import com.kokakiwi.mclauncher.utils.java.Utils;
+import com.kokakiwi.mclauncher.utils.java.Utils.OS;
 
 public class GameUpdater implements Runnable
 {
@@ -67,12 +67,12 @@ public class GameUpdater implements Runnable
                 dir.mkdirs();
             }
             
-            final String latestVersion = launcherFrame.config
-                    .getString("latestVersion");
+            final String latestVersion = launcherFrame.getConfig().getString(
+                    "latestVersion");
             
             if (latestVersion != null)
             {
-                final boolean forceUpdate = launcherFrame.config
+                final boolean forceUpdate = launcherFrame.getConfig()
                         .getString("force-update") == null ? false : true;
                 final File versionFile = new File(dir, "version");
                 
@@ -89,7 +89,10 @@ public class GameUpdater implements Runnable
                 if (forceUpdate || !cacheAvailable)
                 {
                     shouldUpdate = true;
-                    if (!forceUpdate && versionFile.exists() && launcherFrame.config.getBoolean("updater.askMinecraftUpdateIfAvailable"))
+                    if (!forceUpdate
+                            && versionFile.exists()
+                            && launcherFrame.getConfig().getBoolean(
+                                    "updater.askMinecraftUpdateIfAvailable"))
                     {
                         checkShouldUpdate();
                     }
@@ -130,8 +133,8 @@ public class GameUpdater implements Runnable
     private void loadJarUrls() throws Exception
     {
         launcher.setState(State.DETERMINING_PACKAGE);
-        final List<String> jarList = launcherFrame.config
-                .getStringList("updater.jarList");
+        final List<String> jarList = launcherFrame.getConfig().getStringList(
+                "updater.jarList");
         jarUrls = new URL[jarList.size()];
         
         for (int i = 0; i < jarList.size(); i++)
@@ -142,8 +145,8 @@ public class GameUpdater implements Runnable
     
     private void loadAdditionalsUrls() throws Exception
     {
-        final List<String> addList = launcherFrame.config
-                .getStringList("updater.additionalsFiles");
+        final List<String> addList = launcherFrame.getConfig().getStringList(
+                "updater.additionalsFiles");
         additionalsUrls = new URL[addList.size()];
         
         for (int i = 0; i < addList.size(); i++)
@@ -167,8 +170,8 @@ public class GameUpdater implements Runnable
         }
         else
         {
-            nativeJar = launcherFrame.config.getString("updater.nativesList."
-                    + osName.name());
+            nativeJar = launcherFrame.getConfig().getString(
+                    "updater.nativesList." + osName.name());
         }
         
         if (nativeJar == null)

@@ -11,7 +11,7 @@ import java.util.Vector;
 import com.kokakiwi.mclauncher.LauncherFrame;
 import com.kokakiwi.mclauncher.core.wrapper.Wrapper;
 import com.kokakiwi.mclauncher.utils.State;
-import com.kokakiwi.mclauncher.utils.Utils;
+import com.kokakiwi.mclauncher.utils.java.Utils;
 
 public class GameLauncher implements Runnable
 {

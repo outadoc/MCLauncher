@@ -3,8 +3,10 @@ package com.kokakiwi.mclauncher.utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +84,11 @@ public class Configuration
         }
         
         return true;
+    }
+    
+    public void load(Configuration config)
+    {
+        merge(this.config, config.getConfig());
     }
     
     @SuppressWarnings("unchecked")
@@ -182,8 +189,22 @@ public class Configuration
         }
     }
     
+    public Map<String, Object> getConfig()
+    {
+        return config;
+    }
+    
     public boolean has(String node)
     {
         return get(node) != null;
+    }
+    
+    public void save(File file) throws Exception
+    {
+        final OutputStream out = new FileOutputStream(file);
+        final Yaml yaml = new Yaml();
+        final byte[] data = yaml.dump(config).getBytes("UTF-8");
+        out.write(data);
+        out.close();
     }
 }

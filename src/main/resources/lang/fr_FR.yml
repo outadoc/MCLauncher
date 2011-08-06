@@ -17,6 +17,8 @@ options:
   willForce: "Sera force!"
   forceUpdateLabel: "Forcer la mise a jour du jeu"
   gameLocationLabel: "Repertoire d'installation"
+  profiles : "Profils"
+  done: "Fini"
 updater:
   retrieving: "Telecharge"
   extracting: "Extrait"

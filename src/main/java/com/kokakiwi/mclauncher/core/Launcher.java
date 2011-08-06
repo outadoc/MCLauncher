@@ -22,7 +22,7 @@ import javax.imageio.ImageIO;
 import com.kokakiwi.mclauncher.LauncherFrame;
 import com.kokakiwi.mclauncher.utils.MCLogger;
 import com.kokakiwi.mclauncher.utils.State;
-import com.kokakiwi.mclauncher.utils.Utils;
+import com.kokakiwi.mclauncher.utils.java.Utils;
 
 public class Launcher extends Applet implements Runnable, AppletStub,
         MouseListener
@@ -68,39 +68,40 @@ public class Launcher extends Applet implements Runnable, AppletStub,
             e.printStackTrace();
         }
         
-        if (launcherFrame.config.getString("server") != null)
+        if (launcherFrame.getConfig().getString("server") != null)
         {
             customParameters.put("server",
-                    launcherFrame.config.getString("server"));
+                    launcherFrame.getConfig().getString("server"));
         }
         
-        if (launcherFrame.config.getString("port") != null)
+        if (launcherFrame.getConfig().getString("port") != null)
         {
-            customParameters
-                    .put("port", launcherFrame.config.getString("port"));
+            customParameters.put("port",
+                    launcherFrame.getConfig().getString("port"));
         }
         
-        if (launcherFrame.config.getString("latestversion") != null)
+        if (launcherFrame.getConfig().getString("latestversion") != null)
         {
-            customParameters.put("latestVersion",
-                    launcherFrame.config.getString("latestVersion"));
+            customParameters.put("latestVersion", launcherFrame.getConfig()
+                    .getString("latestVersion"));
         }
         
-        if (launcherFrame.config.getString("downloadticket") != null)
+        if (launcherFrame.getConfig().getString("downloadticket") != null)
         {
-            customParameters.put("downloadTicket",
-                    launcherFrame.config.getString("downloadTicket"));
+            customParameters.put("downloadTicket", launcherFrame.getConfig()
+                    .getString("downloadTicket"));
         }
         
-        if (launcherFrame.config.getString("sessionid") != null)
+        if (launcherFrame.getConfig().getString("sessionid") != null)
         {
-            customParameters.put("sessionID",
-                    launcherFrame.config.getString("sessionID"));
+            customParameters.put("sessionID", launcherFrame.getConfig()
+                    .getString("sessionID"));
         }
         
-        customParameters.put("username", launcherFrame.config
-                .getString("userName") == null ? "Player"
-                : launcherFrame.config.getString("userName"));
+        customParameters
+                .put("username", launcherFrame.getConfig()
+                        .getString("userName") == null ? "Player"
+                        : launcherFrame.getConfig().getString("userName"));
         
         // this.customParameters.put("stand-alone", "true");
         
@@ -239,8 +240,8 @@ public class Launcher extends Applet implements Runnable, AppletStub,
         applet.start();
         validate();
         
-        launcherFrame.setTitle(launcherFrame.config
-                .getString("gameLauncher.gameName"));
+        launcherFrame.setTitle(launcherFrame.getConfig().getString(
+                "gameLauncher.gameName"));
     }
     
     @Override
@@ -377,7 +378,7 @@ public class Launcher extends Applet implements Runnable, AppletStub,
             return custom;
         }
         
-        custom = launcherFrame.config.getString(name);
+        custom = launcherFrame.getConfig().getString(name);
         if (custom != null)
         {
             return custom;
@@ -399,9 +400,8 @@ public class Launcher extends Applet implements Runnable, AppletStub,
     {
         try
         {
-            return new URL(
-                    launcherFrame.config
-                            .getString("gameLauncher.documentBaseURL"));
+            return new URL(launcherFrame.getConfig().getString(
+                    "gameLauncher.documentBaseURL"));
         }
         catch (final MalformedURLException e)
         {

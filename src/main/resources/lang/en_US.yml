@@ -17,6 +17,8 @@ options:
   willForce: "Will force!"
   forceUpdateLabel: "Force game update"
   gameLocationLabel: "Game location on disk"
+  profiles: "Profiles"
+  done: "Done"
 updater:
   retrieving: "Retrieving"
   extracting: "Extracting"

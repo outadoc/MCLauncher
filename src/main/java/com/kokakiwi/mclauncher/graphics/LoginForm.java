@@ -40,8 +40,8 @@ import com.kokakiwi.mclauncher.graphics.utils.TransparentButton;
 import com.kokakiwi.mclauncher.graphics.utils.TransparentCheckbox;
 import com.kokakiwi.mclauncher.graphics.utils.TransparentLabel;
 import com.kokakiwi.mclauncher.graphics.utils.TransparentPanel;
-import com.kokakiwi.mclauncher.utils.ClassesUtils;
-import com.kokakiwi.mclauncher.utils.Utils;
+import com.kokakiwi.mclauncher.utils.java.ClassesUtils;
+import com.kokakiwi.mclauncher.utils.java.Utils;
 
 public class LoginForm extends JPanel
 {
@@ -52,6 +52,7 @@ public class LoginForm extends JPanel
     private JScrollPane               scrollPane       = null;
     public JTextField                 userName         = new JTextField(20);
     public JPasswordField             password         = new JPasswordField(20);
+    private JPanel                    loginBox;
     private final TransparentCheckbox rememberBox;
     private final TransparentButton   launchButton;
     private final TransparentButton   optionsButton;
@@ -83,6 +84,29 @@ public class LoginForm extends JPanel
         add(buildMainLoginPanel(), "Center");
     }
     
+    public void refresh()
+    {
+        rememberBox
+                .setText(launcherFrame.locale.getString("login.rememberBox"));
+        launchButton.setText(launcherFrame.locale
+                .getString("login.launchButton"));
+        optionsButton.setText(launcherFrame.locale
+                .getString("login.optionsButton"));
+        retryButton
+                .setText(launcherFrame.locale.getString("login.retryButton"));
+        offlineButton.setText(launcherFrame.locale
+                .getString("login.offlineButton"));
+        userName = new JTextField(20);
+        password = new JPasswordField(20);
+        
+        removeAll();
+        southPanel.removeAll();
+        setLayout(new BorderLayout());
+        readUsername();
+        add(buildMainLoginPanel(), "Center");
+        validate();
+    }
+    
     private JPanel buildMainLoginPanel()
     {
         final JPanel panel = new TransparentPanel(new BorderLayout());
@@ -95,7 +119,8 @@ public class LoginForm extends JPanel
         southPanel.setLayout(new BorderLayout());
         southPanel.add(new LogoPanel(), "West");
         southPanel.add(statusText, "Center");
-        southPanel.add(center(buidLoginPanel()), "East");
+        loginBox = buildLoginPanel();
+        southPanel.add(center(loginBox), "East");
         southPanel.setPreferredSize(new Dimension(100, 100));
         
         panel.add(southPanel, "South");
@@ -122,7 +147,7 @@ public class LoginForm extends JPanel
         return panel;
     }
     
-    private JPanel buidLoginPanel()
+    private JPanel buildLoginPanel()
     {
         final TransparentPanel panel = new TransparentPanel();
         final BorderLayout layout = new BorderLayout();
@@ -202,9 +227,8 @@ public class LoginForm extends JPanel
                 }
             });
             
-            new ClassesUtils.BrowserThread(editorPane,
-                    launcherFrame.config.getString("launcher.browserHomeURL"))
-                    .start();
+            new ClassesUtils.BrowserThread(editorPane, launcherFrame
+                    .getConfig().getString("launcher.browserHomeURL")).start();
             editorPane.setBackground(Color.DARK_GRAY);
             editorPane.setEditable(false);
             scrollPane = new JScrollPane(editorPane);
@@ -227,23 +251,23 @@ public class LoginForm extends JPanel
         southPanel.setLayout(new BorderLayout());
         southPanel.add(new LogoPanel(), "West");
         southPanel.add(statusText, "Center");
-        southPanel.add(center(buidOfflineLoginPanel()), "East");
+        southPanel.add(center(buildOfflineLoginPanel()), "East");
         southPanel.setPreferredSize(new Dimension(100, 100));
         southPanel.validate();
     }
     
-    public void loginMode()
+    public void refreshLoginBox()
     {
         southPanel.removeAll();
         southPanel.setLayout(new BorderLayout());
         southPanel.add(new LogoPanel(), "West");
         southPanel.add(statusText, "Center");
-        southPanel.add(center(buidLoginPanel()), "East");
+        southPanel.add(center(buildLoginPanel()), "East");
         southPanel.setPreferredSize(new Dimension(100, 100));
         southPanel.validate();
     }
     
-    private JPanel buidOfflineLoginPanel()
+    private JPanel buildOfflineLoginPanel()
     {
         final TransparentPanel panel = new TransparentPanel();
         final BorderLayout layout = new BorderLayout();
@@ -305,9 +329,10 @@ public class LoginForm extends JPanel
             
             if (lastLogin.exists())
             {
-                final Cipher cipher = getCipher(Cipher.DECRYPT_MODE,
-                        launcherFrame.config
-                                .getString("updater.loginFileEncryptionKey"));
+                final Cipher cipher = getCipher(
+                        Cipher.DECRYPT_MODE,
+                        launcherFrame.getConfig().getString(
+                                "updater.loginFileEncryptionKey"));
                 DataInputStream dis;
                 if (cipher != null)
                 {
@@ -337,9 +362,8 @@ public class LoginForm extends JPanel
             final File lastLogin = new File(
                     Utils.getWorkingDirectory(launcherFrame), "lastlogin");
             
-            final Cipher cipher = getCipher(Cipher.ENCRYPT_MODE,
-                    launcherFrame.config
-                            .getString("updater.loginFileEncryptionKey"));
+            final Cipher cipher = getCipher(Cipher.ENCRYPT_MODE, launcherFrame
+                    .getConfig().getString("updater.loginFileEncryptionKey"));
             DataOutputStream dos;
             if (cipher != null)
             {

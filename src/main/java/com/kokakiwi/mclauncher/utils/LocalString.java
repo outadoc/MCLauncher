@@ -9,6 +9,8 @@ import java.util.Map;
 import org.yaml.snakeyaml.Yaml;
 
 import com.kokakiwi.mclauncher.LauncherFrame;
+import com.kokakiwi.mclauncher.utils.java.StringFormatter;
+import com.kokakiwi.mclauncher.utils.java.Utils;
 
 public class LocalString
 {
@@ -47,7 +49,7 @@ public class LocalString
         
         final Map<String, String> params = new HashMap<String, String>();
         params.put("GAMENAME",
-                launcherFrame.config.getString("gameLauncher.gameName"));
+                launcherFrame.getConfig().getString("gameLauncher.gameName"));
         
         nodeValue = StringFormatter.format(nodeValue, params);
         

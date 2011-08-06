@@ -1,4 +1,4 @@
-package com.kokakiwi.mclauncher.utils;
+package com.kokakiwi.mclauncher.utils.java;
 
 import java.io.File;
 

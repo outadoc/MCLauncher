@@ -11,6 +11,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.net.URL;
 
 import javax.swing.JButton;
@@ -21,7 +23,7 @@ import javax.swing.border.EmptyBorder;
 
 import com.kokakiwi.mclauncher.LauncherFrame;
 import com.kokakiwi.mclauncher.graphics.utils.TransparentLabel;
-import com.kokakiwi.mclauncher.utils.Utils;
+import com.kokakiwi.mclauncher.utils.java.Utils;
 
 public class OptionsPanel extends JDialog
 {
@@ -39,7 +41,7 @@ public class OptionsPanel extends JDialog
         
         public void actionPerformed(ActionEvent arg0)
         {
-            launcherFrame.config.set("force-update", "true");
+            launcherFrame.getConfig().set("force-update", "true");
             forceButton.setText(launcherFrame.locale
                     .getString("options.willForce"));
             forceButton.setEnabled(false);
@@ -50,9 +52,17 @@ public class OptionsPanel extends JDialog
     public OptionsPanel(LauncherFrame parent)
     {
         super(parent);
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent arg0)
+            {
+                OptionsPanel.this.setVisible(false);
+            }
+        });
         launcherFrame = parent;
         
         setModal(true);
+        setTitle("Launcher options");
         
         final JPanel panel = new JPanel(new BorderLayout());
         final JLabel label = new JLabel("Launcher options", 0);
@@ -68,7 +78,7 @@ public class OptionsPanel extends JDialog
         
         final JButton forceButton = new JButton(
                 launcherFrame.locale.getString("options.forceUpdate"));
-        if (launcherFrame.config.getString("force-update") != null)
+        if (launcherFrame.getConfig().getString("force-update") != null)
         {
             forceButton.setEnabled(false);
             forceButton.setText(launcherFrame.locale
@@ -78,6 +88,18 @@ public class OptionsPanel extends JDialog
         labelPanel.add(new JLabel(launcherFrame.locale
                 .getString("options.forceUpdateLabel") + ": ", 4));
         fieldPanel.add(forceButton);
+        labelPanel.add(new JLabel(launcherFrame.locale
+                .getString("options.profiles") + ":", 4));
+        final JButton profilesButton = new JButton(
+                launcherFrame.locale.getString("options.profiles"));
+        profilesButton.addActionListener(new ActionListener() {
+            
+            public void actionPerformed(ActionEvent e)
+            {
+                new ProfilesPanel(launcherFrame).setVisible(true);
+            }
+        });
+        fieldPanel.add(profilesButton);
         
         labelPanel.add(new JLabel(launcherFrame.locale
                 .getString("options.gameLocationLabel") + ": ", 4));
@@ -146,7 +168,8 @@ public class OptionsPanel extends JDialog
         
         final JPanel buttonsPanel = new JPanel(new BorderLayout());
         buttonsPanel.add(new JPanel(), "Center");
-        final JButton doneButton = new JButton("Done");
+        final JButton doneButton = new JButton(
+                launcherFrame.locale.getString("options.done"));
         doneButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae)
             {
@@ -158,7 +181,7 @@ public class OptionsPanel extends JDialog
         
         panel.add(buttonsPanel, "South");
         
-        add(panel);
+        getContentPane().add(panel);
         panel.setBorder(new EmptyBorder(16, 24, 24, 24));
         pack();
         setLocationRelativeTo(parent);

@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -21,9 +20,10 @@ import com.kokakiwi.mclauncher.graphics.LoginForm;
 import com.kokakiwi.mclauncher.utils.Configuration;
 import com.kokakiwi.mclauncher.utils.LocalString;
 import com.kokakiwi.mclauncher.utils.MCLogger;
-import com.kokakiwi.mclauncher.utils.StringFormatter;
-import com.kokakiwi.mclauncher.utils.Utils;
-import com.kokakiwi.mclauncher.utils.Version;
+import com.kokakiwi.mclauncher.utils.ProfileManager;
+import com.kokakiwi.mclauncher.utils.java.StringFormatter;
+import com.kokakiwi.mclauncher.utils.java.Utils;
+import com.kokakiwi.mclauncher.utils.java.Version;
 
 public class LauncherFrame extends Frame
 {
@@ -31,7 +31,7 @@ public class LauncherFrame extends Frame
     
     public static Version     APP_VERSION      = new Version(0, 9, 3);
     
-    public Configuration      config           = new Configuration();
+    public ProfileManager     profiles         = new ProfileManager();
     
     public JPanel             panel;
     public LoginForm          loginForm;
@@ -42,34 +42,22 @@ public class LauncherFrame extends Frame
     {
         super();
         MCLogger.info("Starting MCLauncher [" + APP_VERSION + "]...");
+        MCLogger.setConfig(getConfig());
         
-        config.load(Utils.getResourceAsStream("config/config.yml"), "Yaml");
-        final File configFile = new File("config.yml");
-        if (!configFile.exists())
+        if (getConfig().getBoolean("launcher.autoConnectServer.connect"))
         {
-            try
-            {
-                configFile.createNewFile();
-            }
-            catch (final IOException e)
-            {
-                e.printStackTrace();
-            }
-        }
-        config.load(configFile);
-        MCLogger.setConfig(config);
-        
-        if(config.getBoolean("launcher.autoConnectServer.connect"))
-        {
-            config.set("server", config.getString("launcher.autoConnectServer.ip"));
-            config.set("port", config.getString("launcher.autoConnectServer.port"));
+            getConfig().set("server",
+                    getConfig().getString("launcher.autoConnectServer.ip"));
+            getConfig().set("port",
+                    getConfig().getString("launcher.autoConnectServer.port"));
         }
         
         MCLogger.printSystemInfos();
         
-        locale = new LocalString(this, config.getStringList("launcher.langs"));
+        locale = new LocalString(this, getConfig().getStringList(
+                "launcher.langs"));
         
-        setTitle(config.getString("launcher.windowTitle"));
+        setTitle(getConfig().getString("launcher.windowTitle"));
         setBackground(Color.BLACK);
         
         panel = new JPanel();
@@ -122,10 +110,16 @@ public class LauncherFrame extends Frame
         });
     }
     
+    public Configuration getConfig()
+    {
+        return profiles.getCurrentProfile().getConfig();
+    }
+    
     @SuppressWarnings("deprecation")
     public void login()
     {
-        final boolean offlineMode = config.getBoolean("launcher.offlineMode");
+        final boolean offlineMode = getConfig().getBoolean(
+                "launcher.offlineMode");
         
         if (offlineMode)
         {
@@ -142,11 +136,11 @@ public class LauncherFrame extends Frame
                         URLEncoder.encode(loginForm.getUserName(), "UTF-8"));
                 keys.put("PASSWORD",
                         URLEncoder.encode(new String(loginForm.getPassword())));
-                final String parameters = StringFormatter.format(
-                        config.getString("launcher.loginParameters"), keys);
+                final String parameters = StringFormatter.format(getConfig()
+                        .getString("launcher.loginParameters"), keys);
                 final String result = Utils.executePost(
-                        config.getString("launcher.loginURL"), parameters,
-                        config.getString("updater.keyFileName"));
+                        getConfig().getString("launcher.loginURL"), parameters,
+                        getConfig().getString("updater.keyFileName"));
                 if (result == null)
                 {
                     loginForm.askOfflineMode();
@@ -173,10 +167,10 @@ public class LauncherFrame extends Frame
                     return;
                 }
                 final String[] values = result.split(":");
-                config.set("latestVersion", values[0].trim());
-                config.set("downloadTicket", values[1].trim());
-                config.set("userName", values[2].trim());
-                config.set("sessionID", values[3].trim());
+                getConfig().set("latestVersion", values[0].trim());
+                getConfig().set("downloadTicket", values[1].trim());
+                getConfig().set("userName", values[2].trim());
+                getConfig().set("sessionID", values[3].trim());
                 loginForm.loginOk();
                 
                 runGame();
@@ -191,8 +185,8 @@ public class LauncherFrame extends Frame
     
     public void playOffline()
     {
-        config.set("latestVersion", "-1");
-        config.set("userName", loginForm.getUserName());
+        getConfig().set("latestVersion", "-1");
+        getConfig().set("userName", loginForm.getUserName());
         loginForm.loginOk();
         runGame();
     }
@@ -225,7 +219,27 @@ public class LauncherFrame extends Frame
         
         launcher.start();
         
-        setTitle(config.getString("gameLauncher.gameName"));
+        setTitle(getConfig().getString("gameLauncher.gameName"));
+    }
+    
+    public void refresh()
+    {
+        if (getConfig().getBoolean("launcher.autoConnectServer.connect"))
+        {
+            getConfig().set("server",
+                    getConfig().getString("launcher.autoConnectServer.ip"));
+            getConfig().set("port",
+                    getConfig().getString("launcher.autoConnectServer.port"));
+        }
+        else
+        {
+            getConfig().set("server", null);
+            getConfig().set("port", null);
+        }
+        
+        locale = new LocalString(this, getConfig().getStringList(
+                "launcher.langs"));
+        setTitle(getConfig().getString("launcher.windowTitle"));
     }
     
     public static void main(String[] args)
@@ -239,21 +253,7 @@ public class LauncherFrame extends Frame
         }
         final LauncherFrame launcherFrame = new LauncherFrame();
         launcherFrame.setVisible(true);
-        launcherFrame.config.set("stand-alone", "true");
-        if (args.length >= 3)
-        {
-            String ip = args[2];
-            String port = "25565";
-            if (ip.contains(":"))
-            {
-                final String[] parts = ip.split(":");
-                ip = parts[0];
-                port = parts[1];
-            }
-            
-            launcherFrame.config.set("server", ip);
-            launcherFrame.config.set("port", port);
-        }
+        launcherFrame.getConfig().set("stand-alone", "true");
         if (args.length >= 1)
         {
             launcherFrame.loginForm.userName.setText(args[0]);
@@ -261,6 +261,20 @@ public class LauncherFrame extends Frame
             {
                 launcherFrame.loginForm.password.setText(args[1]);
                 launcherFrame.doLogin();
+                if (args.length >= 3)
+                {
+                    String ip = args[2];
+                    String port = "25565";
+                    if (ip.contains(":"))
+                    {
+                        final String[] parts = ip.split(":");
+                        ip = parts[0];
+                        port = parts[1];
+                    }
+                    
+                    launcherFrame.getConfig().set("server", ip);
+                    launcherFrame.getConfig().set("port", port);
+                }
             }
         }
     }

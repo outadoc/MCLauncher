@@ -1,4 +1,4 @@
-package com.kokakiwi.mclauncher.utils;
+package com.kokakiwi.mclauncher.utils.java;
 
 public class Version implements Comparable<Version>
 {
@@ -34,7 +34,7 @@ public class Version implements Comparable<Version>
         for (int i = 0; i < nums.length; i++)
         {
             sb.append(String.valueOf(nums[i]));
-            if (i < (nums.length - 1))
+            if (i < nums.length - 1)
             {
                 sb.append('.');
             }

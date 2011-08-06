@@ -4,10 +4,15 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Point2D;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -23,6 +28,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
@@ -40,6 +46,7 @@ import com.kokakiwi.mclauncher.graphics.utils.TransparentButton;
 import com.kokakiwi.mclauncher.graphics.utils.TransparentCheckbox;
 import com.kokakiwi.mclauncher.graphics.utils.TransparentLabel;
 import com.kokakiwi.mclauncher.graphics.utils.TransparentPanel;
+import com.kokakiwi.mclauncher.utils.MCLogger;
 import com.kokakiwi.mclauncher.utils.java.ClassesUtils;
 import com.kokakiwi.mclauncher.utils.java.Utils;
 
@@ -130,7 +137,7 @@ public class LoginForm extends JPanel
     {
         final JPanel panel = new TransparentPanel(new BorderLayout());
         
-        if (System.getenv("debugMode") == null || true)
+        if (System.getenv("debugMode") == null)
         {
             panel.add(getUpdateNews(), "Center");
         }
@@ -195,59 +202,58 @@ public class LoginForm extends JPanel
         return panel;
     }
     
-    private JScrollPane getUpdateNews()
+    private JPanel getUpdateNews()
     {
-        if (scrollPane != null)
-        {
-            return scrollPane;
-        }
-        try
+        if (scrollPane == null)
         {
             final JTextPane editorPane = new JTextPane();
-            editorPane
-                    .setText("<html><body><font color=\"#808080\"><br><br><br><br><br><br><br><center>"
-                            + launcherFrame.locale
-                                    .getString("launcher.loadBrowser")
-                            + "</center></font></body></html>");
-            editorPane.addHyperlinkListener(new HyperlinkListener() {
-                
-                public void hyperlinkUpdate(HyperlinkEvent he)
-                {
-                    if (he.getEventType() == EventType.ACTIVATED)
+            try
+            {
+                editorPane
+                        .setText("<html><body><font color=\"#808080\"><br><br><br><br><br><br><br><center>"
+                                + launcherFrame.locale
+                                        .getString("launcher.loadBrowser")
+                                + "</center></font></body></html>");
+                editorPane.addHyperlinkListener(new HyperlinkListener() {
+                    
+                    public void hyperlinkUpdate(HyperlinkEvent he)
                     {
-                        try
+                        if (he.getEventType() == EventType.ACTIVATED)
                         {
-                            editorPane.setPage(he.getURL());
-                        }
-                        catch (final IOException e)
-                        {
-                            e.printStackTrace();
+                            try
+                            {
+                                editorPane.setPage(he.getURL());
+                            }
+                            catch (final IOException e)
+                            {
+                                e.printStackTrace();
+                            }
                         }
                     }
-                }
-            });
-            
-            new ClassesUtils.BrowserThread(editorPane, launcherFrame
-                    .getConfig().getString("launcher.browserHomeURL")).start();
-            editorPane.setBackground(Color.DARK_GRAY);
-            editorPane.setEditable(false);
-            scrollPane = new JScrollPane(editorPane)
+                });
+                
+                editorPane.setBackground(Color.DARK_GRAY);
+                editorPane.setEditable(false);
+                scrollPane = new JScrollPane(editorPane);
+                scrollPane.setBorder(null);
+                editorPane.setMargin(null);
+                
+                scrollPane.setBorder(new MatteBorder(0, 0, 2, 0, Color.BLACK));
+                
+                new ClassesUtils.BrowserThread(editorPane, launcherFrame
+                        .getConfig().getString("launcher.browserHomeURL")).start();
+            }
+            catch (final Exception e)
             {
-                private static final long serialVersionUID = -5094614353925459036L;
-                
-                
-            };
-            scrollPane.setBorder(null);
-            editorPane.setMargin(null);
-            
-            scrollPane.setBorder(new MatteBorder(0, 0, 2, 0, Color.BLACK));
-        }
-        catch (final Exception e)
-        {
-            e.printStackTrace();
+                MCLogger.error(e.getLocalizedMessage());
+            }
         }
         
-        return scrollPane;
+        JPanel panel = new TexturedPanel("res/stone.png");
+        panel.setLayout(new BorderLayout());
+        panel.add(scrollPane, "Center");
+        
+        return panel;
     }
     
     public void askOfflineMode()

@@ -1,10 +1,9 @@
 package com.kokakiwi.mclauncher;
 
 import java.util.ArrayList;
-
 import javax.swing.UIManager;
-
 import com.kokakiwi.mclauncher.utils.ProfileManager;
+import com.kokakiwi.mclauncher.utils.java.SystemUtils;
 
 public class MCLauncher
 {
@@ -24,7 +23,7 @@ public class MCLauncher
         {
             try
             {    	
-            	if(System.getProperty("os.name").startsWith("Mac"))
+            	if(SystemUtils.getSystemOS() == SystemUtils.OS.macosx)
             	{
             		ProfileManager profiles = new ProfileManager();
             		profiles.getCurrentProfile().getConfig().getString("launcher.windowTitle");

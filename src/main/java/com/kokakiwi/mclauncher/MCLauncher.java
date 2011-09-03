@@ -2,6 +2,10 @@ package com.kokakiwi.mclauncher;
 
 import java.util.ArrayList;
 
+import javax.swing.UIManager;
+
+import com.kokakiwi.mclauncher.utils.ProfileManager;
+
 public class MCLauncher
 {
     @SuppressWarnings("unused")
@@ -19,7 +23,16 @@ public class MCLauncher
         else
         {
             try
-            {
+            {    	
+            	if(System.getProperty("os.name").startsWith("Mac"))
+            	{
+            		ProfileManager profiles = new ProfileManager();
+            		profiles.getCurrentProfile().getConfig().getString("launcher.windowTitle");
+            		System.setProperty("apple.laf.useScreenMenuBar", "true");
+            		System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Minecraft Launcher");
+            		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            	}
+            		
                 final String pathToJar = MCLauncher.class.getProtectionDomain()
                         .getCodeSource().getLocation().toURI().getPath();
                 

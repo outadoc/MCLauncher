@@ -16,7 +16,7 @@ public class MCLogger
     private static Configuration config;
     
     // private static Logger global = Logger.getGlobal();
-    private static Logger        logger = Logger.getLogger("MCLauncher");
+    private static Logger logger = Logger.getLogger("MCLauncher");
     
     static
     {
@@ -72,7 +72,7 @@ public class MCLogger
         
         final StringBuffer sb = new StringBuffer();
         sb.append("System informations:");
-        sb.append(System.lineSeparator());
+        sb.append("\n");
         for(String key : infos.keySet())
         {
             String value = infos.get(key);
@@ -80,7 +80,7 @@ public class MCLogger
             sb.append(key);
             sb.append(" : ");
             sb.append(value);
-            sb.append(System.lineSeparator());
+            sb.append("\n");
         }
         
         debug(sb.toString());

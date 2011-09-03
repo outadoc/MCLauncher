@@ -26,7 +26,7 @@ public class ProfilesPanel extends JDialog
     
     private final JPanel        contentPanel     = new JPanel();
     private final Profile       previousProfile;
-    private final JList<Object> list;
+    private final JList list;
     
     /**
      * Create the dialog.
@@ -47,7 +47,7 @@ public class ProfilesPanel extends JDialog
         getContentPane().add(contentPanel, BorderLayout.CENTER);
         contentPanel.setLayout(null);
         
-        list = new JList<Object>();
+        list = new JList();
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setBorder(new LineBorder(new Color(0, 0, 0)));
         list.setBounds(10, 11, 275, 146);
@@ -146,7 +146,7 @@ public class ProfilesPanel extends JDialog
     
     public void refreshList()
     {
-        final ListModel<Object> model = new ProfileListModel(launcherFrame);
+        final ListModel model = new ProfileListModel(launcherFrame);
         list.setModel(model);
     }
 }
